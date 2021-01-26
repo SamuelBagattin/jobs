@@ -44,15 +44,14 @@ jobs:
         aws-region: eu-central-1
     
     - name: Terragrunt init
-      id: terragrunt init
+      id: terragrunt_init
       run: ./terragrunt_linux_amd64 init -input=false
       working-directory: infrastructure
       
     - name: Terragrunt validate
-      id: terragrunt validate
+      id: terragrunt_validate
       run: ./terragrunt_linux_amd64 validate
       working-directory: infrastructure
-
 
     - name: Terraform Validate
       id: validate
