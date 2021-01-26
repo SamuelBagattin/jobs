@@ -30,7 +30,7 @@ jobs:
       working-directory: jobs_scaper
     
     - name: Build
-      run: go build -v ./
+      run: go build -v ./entrypoints/lambda/main.go
       working-directory: jobs_scaper
 
     - name: Configure AWS Credentials
