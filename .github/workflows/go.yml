@@ -26,7 +26,11 @@ jobs:
         go-version: 1.15
         
     - name: Set up terragrunt
-      run: wget -q https://github.com/gruntwork-io/terragrunt/releases/download/v0.27.3/terragrunt_linux_amd64 && chmod +x ./terragrunt_linux_amd64 
+      run: wget -q https://github.com/gruntwork-io/terragrunt/releases/download/v0.27.3/terragrunt_linux_amd64 && chmod +x ./terragrunt_linux_amd64
+      
+    - name: Register terragrunt exec path
+      id: terragrunt_exec
+      run: echo "$(pwd)/terragrunt_linux_amd64"
 
     - name: Install dependencies
       run: go get ./...
@@ -45,12 +49,12 @@ jobs:
     
     - name: Terragrunt init
       id: terragrunt_init
-      run: ./terragrunt_linux_amd64 init -input=false
+      run: ${{ steps.terragrunt_exec.outputs.stdout }} init -input=false
       working-directory: infrastructure
       
     - name: Terragrunt validate
       id: terragrunt_validate
-      run: ./terragrunt_linux_amd64 validate
+      run: ${{ steps.terragrunt_exec.outputs.stdout }} validate
       working-directory: infrastructure
 
     - name: Terraform Validate
@@ -60,12 +64,12 @@ jobs:
 
     - name: Terragrunt Plan
       id: plan
-      run: ./terragrunt_linux_amd64 plan -no-color -input=false
+      run: ${{ steps.terragrunt_exec.outputs.stdout }} plan -no-color -input=false
       working-directory: infrastructure
       
     - name: Terragrunt Apply
       id: apply
-      run: ./terragrunt_linux_amd64 apply -input=false
+      run: ${{ steps.terragrunt_exec.outputs.stdout }} apply -input=false
       working-directory: infrastructure
       
     - uses: actions/github-script@0.9.0
