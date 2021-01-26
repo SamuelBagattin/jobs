@@ -24,6 +24,9 @@ jobs:
       uses: actions/setup-go@v2
       with:
         go-version: 1.15
+        
+    - name: Set up terragrunt
+      run: wget https://github.com/gruntwork-io/terragrunt/releases/download/v0.27.3/terragrunt_linux_amd64 && mv terragrunt_linux_amd64 /usr/local/bin/terragrunt && chmod +x /usr/local/bin/terragrunt
 
     - name: Install dependencies
       run: go get ./...
@@ -55,7 +58,12 @@ jobs:
       run: terraform plan -no-color
       continue-on-error: true
       working-directory: infrastructure
-
+      
+    - name: Terraform Plan
+      id: apply
+      run: terraform plan -no-color
+      working-directory: infrastructure
+      
     - uses: actions/github-script@0.9.0
       if: github.event_name == 'pull_request'
       env:
