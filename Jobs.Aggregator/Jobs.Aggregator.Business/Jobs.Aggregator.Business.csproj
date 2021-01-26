@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <RootNamespace>Jobs.Aggregator.Core</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Jobs.Aggregator.Core\Jobs.Aggregator.Core.csproj" />
+      <ProjectReference Include="..\Jobs.Aggregator.Firestore\Jobs.Aggregator.Firestore.csproj" />
+      <ProjectReference Include="..\Jobs.Aggregator.Postgres\Jobs.Aggregator.Postgres.csproj" />
+    </ItemGroup>
+
+</Project>
