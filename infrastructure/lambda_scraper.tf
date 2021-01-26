@@ -3,9 +3,9 @@ module "jobs_scraper" {
 
   function_name = "jobs-scraper"
   description   = "Lambda function for jobs scraping"
-  handler       = "lambda_entrypoint"
+  handler       = "main"
   runtime       = "go1.x"
 
   create_package         = false
-  local_existing_package = "../lambda_entrypoint.zip"
+  local_existing_package = "../main.zip"
 }
