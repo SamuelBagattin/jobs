@@ -6,6 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Jobs.Aggregator.Aws\Jobs.Aggregator.Aws.csproj" />
       <ProjectReference Include="..\Jobs.Aggregator.Core\Jobs.Aggregator.Core.csproj" />
       <ProjectReference Include="..\Jobs.Aggregator.Firestore\Jobs.Aggregator.Firestore.csproj" />
       <ProjectReference Include="..\Jobs.Aggregator.Postgres\Jobs.Aggregator.Postgres.csproj" />

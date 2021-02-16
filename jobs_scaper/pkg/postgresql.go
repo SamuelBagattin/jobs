@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/lib/pq"
+	"jobs_scaper/pkg/scraping"
 	"os"
 	"sync"
 )
@@ -28,14 +29,32 @@ func DatabaseInit() *sql.DB {
 	return db
 }
 
-func InsertJobsIntoPostgresDb(infos *[]*JobInfo) error  {
+func InsertJobsIntoPostgresDb(infos *[]*scraping.JobInfo) error {
 	DatabaseInit()
 	for _, info := range *infos {
-		_, err := db.Exec("insert into Jobs(Title, Company, Site, Url, ScrapeDate) VALUES ($1, $2, $3, $4, $5);", info.Title, info.Company, info.Site, info.Url, info.Date)
+		_, err := db.Exec("insert into Jobs(Title, Company, Site, Url, ScrapeDate, Description) VALUES ($1, $2, $3, $4, $5, $6);", info.Title, info.Company, info.Site, info.Url, info.Date, info.Description)
 		if err != nil {
 			return err
 		}
 	}
 	return nil
 
+}
+
+func GetAllJobs() *[]*scraping.JobInfo {
+	DatabaseInit()
+	rows, err := db.Query("select Title, Company, Site, Url, ScrapeDate from Jobs")
+	if err != nil {
+		panic(err)
+	}
+	var jobs []*scraping.JobInfo
+
+	for rows.Next() {
+		job := scraping.JobInfo{}
+		if err := rows.Scan(&job.Title, &job.Company, &job.Site, &job.Url, &job.Date); err != nil {
+			panic(err)
+		}
+		jobs = append(jobs, &job)
+	}
+	return &jobs
 }

@@ -1,4 +1,4 @@
-package pkg
+package utils
 
 import (
 	"math/rand"
@@ -32,4 +32,10 @@ func RandStringBytesMaskImprSrcUnsafe(n int) string {
 	}
 
 	return *(*string)(unsafe.Pointer(&b))
+}
+
+// Generates duration between 0.5 and 1.5 seconds
+func RandScrapingInterval() time.Duration {
+	i := int(rand.Float32()*1000 + 500)
+	return time.Millisecond * time.Duration(i)
 }

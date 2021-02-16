@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jobs.Aggregator.Firestore",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jobs.Aggregator.Core", "Jobs.Aggregator.Core\Jobs.Aggregator.Core.csproj", "{A367A230-30A8-493C-8C7C-EA3810632EAC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jobs.Aggregator.Aws", "Jobs.Aggregator.Aws\Jobs.Aggregator.Aws.csproj", "{C233054F-B3AD-486E-942F-AFB8279DC7DA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +38,9 @@ Global
 		{A367A230-30A8-493C-8C7C-EA3810632EAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A367A230-30A8-493C-8C7C-EA3810632EAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A367A230-30A8-493C-8C7C-EA3810632EAC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C233054F-B3AD-486E-942F-AFB8279DC7DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C233054F-B3AD-486E-942F-AFB8279DC7DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C233054F-B3AD-486E-942F-AFB8279DC7DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C233054F-B3AD-486E-942F-AFB8279DC7DA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

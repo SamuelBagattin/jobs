@@ -13,7 +13,25 @@ namespace Jobs.Aggregator.Core
         Cpp,
         C,
         Devops,
-        Cloud
+        Cloud,
+        Embedded,
+        Android,
+        Ios,
+        Arduino,
+        Tensorflow,
+        Javascript,
+        Typescript,
+        Python,
+        Hardware,
+        Iot,
+        Sql,
+        PlSql,
+        TSql,
+        Aws,
+        Gcp,
+        Azure,
+        Jenkins,
+        Teamcity
     }
 
 }
