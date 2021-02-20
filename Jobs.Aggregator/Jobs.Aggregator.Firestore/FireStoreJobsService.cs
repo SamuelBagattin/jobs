@@ -17,22 +17,22 @@ namespace Jobs.Aggregator.Firestore
             _db = db;
         }
 
-        public async Task InsertJobs(List<JobByTechno> jobs)
-        {
-            Console.WriteLine($"Inserting jobs {jobs.Count}into firestore");
-            var collection = _db.Collection("jobs");
-            foreach (var job in jobs)
-            {
-                if (job.LastSeen != null)
-                    await collection.AddAsync(new
-                    {
-                        job.Company,
-                        job.Site,
-                        Technologies = job.Technologies.Select(e => Enum.GetName(typeof(TechnologiesEnum), e)),
-                        job.JobUrl,
-                        LastSeen = DateTime.SpecifyKind(job.LastSeen.Value, DateTimeKind.Utc)
-                    });
-            }
-        }
+        // public async Task InsertJobs(List<AggregatedCompany> jobs)
+        // {
+        //     Console.WriteLine($"Inserting jobs {jobs.Count}into firestore");
+        //     var collection = _db.Collection("jobs");
+        //     foreach (var job in jobs)
+        //     {
+        //         if (job.LastSeen != null)
+        //             await collection.AddAsync(new
+        //             {
+        //                 job.Company,
+        //                 job.Site,
+        //                 Technologies = job.Technologies.Select(e => Enum.GetName(typeof(TechnologiesEnum), e)),
+        //                 JobUrl = job.Jobs,
+        //                 LastSeen = DateTime.SpecifyKind(job.LastSeen.Value, DateTimeKind.Utc)
+        //             });
+        //     }
+        // }
     }
 }
