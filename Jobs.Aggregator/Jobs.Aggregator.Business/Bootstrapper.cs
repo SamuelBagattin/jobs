@@ -16,13 +16,7 @@ namespace Jobs.Aggregator.Core
         public static AggregatorService Init()
         {
             Console.WriteLine("Bootstrapping...");
-            var firestoreBuilder = new FirestoreClientBuilder
-            {
-                // TODO
-                JsonCredentials = @""
-            };
-            return new AggregatorService(new JobsRepository(new JobsContext()), 
-                // new FireStoreJobsService(FirestoreDb.Create("jobs-scraper-31230", firestoreBuilder.Build())), 
+            return new AggregatorService(new JobsRepository(new JobsContext()),
                 new ScraperResultsService(new AmazonS3Client()));
         }
     }
