@@ -31,7 +31,9 @@ namespace Jobs.Aggregator.Core
         Gcp,
         Azure,
         Jenkins,
-        Teamcity
+        Teamcity,
+        Symfony,
+        Laravel
     }
 
 }
