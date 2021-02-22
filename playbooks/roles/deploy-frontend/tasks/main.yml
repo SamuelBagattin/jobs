@@ -1,0 +1,14 @@
+---
+
+- name: Get frontend dir
+  command: echo "$(git rev-parse --show-toplevel)/frontend"
+  register: frontend_dir
+
+- name: "Build frontend"
+  shell: yarn --cwd "{{frontend_dir.stdout}}" build --prod
+
+- name: "Deploy to s3"
+  shell: aws s3 cp --recursive "{{frontend_dir.stdout}}/dist/jobs" s3://jobs-aggregator-results
+
+- name: "Invalidate cloudfront cache"
+  shell: aws cloudfront create-invalidation --distribution-id E18D9SN6OZJ99D --paths '/*'
