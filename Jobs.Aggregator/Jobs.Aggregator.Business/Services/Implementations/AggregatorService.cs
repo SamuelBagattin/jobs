@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Jobs.Aggregator.Aws.Services.Contracts;
 using Jobs.Aggregator.Core.FinalModels;
@@ -150,6 +152,9 @@ namespace Jobs.Aggregator.Core.Services.Implementations
                     })
                 }
             };
+            File.Create("../../../../linkedin_aggregated.json").Close();
+            await File.WriteAllTextAsync("../../../../linkedin_aggregated.json", JsonSerializer.Serialize(res2));
+            // await _fireStoreJobsService.InsertJobs(res.ToList());
         }
     }
 }
