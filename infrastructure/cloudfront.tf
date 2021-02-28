@@ -15,7 +15,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   enabled             = true
   is_ipv6_enabled     = true
   comment             = "Some comment"
-  default_root_object = "index.json"
+  default_root_object = "index.html"
 
   aliases = [local.website_domain]
   viewer_certificate {
