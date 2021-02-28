@@ -35,5 +35,4 @@ namespace Jobs.Aggregator.Core
         Symfony,
         Laravel
     }
-
 }

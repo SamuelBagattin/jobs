@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
-using Jobs.Aggregator.Core.TransitionModels;
 
 namespace Jobs.Aggregator.Core.FinalModels
 {
@@ -28,15 +27,15 @@ namespace Jobs.Aggregator.Core.FinalModels
 
     public class TechnologyStatisticsCompany
     {
-        [JsonIgnore]
-        public IEnumerable<string> Ids { get; set; }
+        [JsonIgnore] public IEnumerable<string> Ids { get; set; }
+
         public int Count => Ids.Count();
     }
-    
+
     public class TechnologyStatisticsJob
     {
-        [JsonIgnore]
-        public IEnumerable<string> Ids { get; set; }
+        [JsonIgnore] public IEnumerable<string> Ids { get; set; }
+
         public int Count => Ids.Count();
     }
 
@@ -46,11 +45,12 @@ namespace Jobs.Aggregator.Core.FinalModels
         public IEnumerable<FinalCompany> Data { get; set; }
         public int Count => Data.Count();
     }
+
     public class FinalCompany
     {
         public string Id { get; set; }
         public IEnumerable<string> PrimaryTechnologies { get; set; }
-        
+
         public IEnumerable<string> SecondaryTechnologies { get; set; }
         public string Company { get; set; }
         public IEnumerable<FinalJob> Jobs { get; set; }
@@ -60,11 +60,11 @@ namespace Jobs.Aggregator.Core.FinalModels
     {
         public string Id { get; set; }
         public IEnumerable<string> PrimaryTechnologies { get; set; }
-         
+
         public IEnumerable<string> SecondaryTechnologies { get; set; }
 
         public IEnumerable<FinalSite> Site { get; set; }
-        
+
         public string Title { get; set; }
     }
 
