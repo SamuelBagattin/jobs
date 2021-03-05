@@ -35,7 +35,7 @@ namespace Jobs.Aggregator.Core.Services.Implementations
             var res = (await _scraperResultsService.GetAllScrapedJobs()).Select(j => new JobByTechnoWithCompany
                 {
                     Company = j.Company,
-                    PrimaryTechnologies = _technologiesService.GetTechnologies(j.Title).ToHashSet(),
+                    MainTechnologies = _technologiesService.GetTechnologies(j.Title).ToHashSet(),
                     SecondaryTechnologies = _technologiesService.GetTechnologies(j.Description).ToHashSet(),
                     Url = j.Url,
                     Site = j.Site,
@@ -45,7 +45,7 @@ namespace Jobs.Aggregator.Core.Services.Implementations
                     // If company does not exists and if current job contains technologies
                     if (!acc.ContainsKey(job.Company))
                     {
-                        if (job.PrimaryTechnologies.Count != 0 || job.SecondaryTechnologies.Count != 0)
+                        if (job.MainTechnologies.Count != 0 || job.SecondaryTechnologies.Count != 0)
                             acc[job.Company] = new AggregatedCompany
                             {
                                 Company = job.Company,
@@ -56,7 +56,7 @@ namespace Jobs.Aggregator.Core.Services.Implementations
                                         new JobByTechno
                                         {
                                             SitesWithUrls = new Dictionary<string, string> {{job.Site, job.Url}},
-                                            PrimaryTechnologies = job.PrimaryTechnologies,
+                                            MainTechnologies = job.MainTechnologies,
                                             SecondaryTechnologies = job.SecondaryTechnologies,
                                             Title = job.Title
                                         }
@@ -69,8 +69,8 @@ namespace Jobs.Aggregator.Core.Services.Implementations
                         // If company already contains the job
                         if (acc[job.Company].Jobs.ContainsKey(job.Title))
                         {
-                            foreach (var techno in job.PrimaryTechnologies)
-                                acc[job.Company].Jobs[job.Title].PrimaryTechnologies.Add(techno);
+                            foreach (var techno in job.MainTechnologies)
+                                acc[job.Company].Jobs[job.Title].MainTechnologies.Add(techno);
 
                             foreach (var techno in job.SecondaryTechnologies)
                                 acc[job.Company].Jobs[job.Title].SecondaryTechnologies.Add(techno);
@@ -79,11 +79,11 @@ namespace Jobs.Aggregator.Core.Services.Implementations
                                 acc[job.Company].Jobs[job.Title].SitesWithUrls[job.Site] = job.Url;
                         }
                         // If company does not contains the job, and if job has technologies
-                        else if ((job.PrimaryTechnologies.Count != 0) | (job.SecondaryTechnologies.Count != 0))
+                        else if ((job.MainTechnologies.Count != 0) | (job.SecondaryTechnologies.Count != 0))
                         {
                             acc[job.Company].Jobs[job.Title] = new JobByTechno
                             {
-                                PrimaryTechnologies = job.PrimaryTechnologies,
+                                MainTechnologies = job.MainTechnologies,
                                 SecondaryTechnologies = job.SecondaryTechnologies,
                                 Title = job.Title,
                                 SitesWithUrls = new Dictionary<string, string>
@@ -96,24 +96,24 @@ namespace Jobs.Aggregator.Core.Services.Implementations
 
                     return acc;
                 }, list => list.Select(e => e.Value))
-                .Where(e => e.SecondaryTechnologies.Count() != 0 || e.PrimaryTechnologies.Count() != 0).ToHashSet();
+                .Where(e => e.SecondaryTechnologies.Count != 0 || e.MainTechnologies.Count != 0).ToHashSet();
 
-            var res2 = new Response
+            var res2 = new ResponseRoot
             {
                 Companies = new CompanyResponse
                 {
-                    Data = res.Select(e => new FinalCompany
+                    Companies = res.Select(e => new FinalCompany
                     {
-                        Id = Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Substring(0, 8),
-                        Company = e.Company,
-                        PrimaryTechnologies = e.PrimaryTechnologies.Select(_technologiesService.GetTechnologyName),
+                        Id = e.Id,
+                        CompanyName = e.Company,
+                        MainTechnologies = e.MainTechnologies.Select(_technologiesService.GetTechnologyName),
                         SecondaryTechnologies = e.SecondaryTechnologies.Select(_technologiesService.GetTechnologyName),
                         Jobs = e.Jobs.Select(job => new FinalJob
                         {
-                            Title = job.Value.Title,
-                            Id = Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Substring(0, 8),
-                            PrimaryTechnologies =
-                                job.Value.PrimaryTechnologies.Select(_technologiesService.GetTechnologyName),
+                            JobTitle = job.Value.Title,
+                            Id = e.Id,
+                            MainTechnologies =
+                                job.Value.MainTechnologies.Select(_technologiesService.GetTechnologyName),
                             SecondaryTechnologies =
                                 job.Value.SecondaryTechnologies.Select(_technologiesService.GetTechnologyName),
                             Site = job.Value.SitesWithUrls.Select(site => new FinalSite
@@ -126,12 +126,12 @@ namespace Jobs.Aggregator.Core.Services.Implementations
                 },
                 Technologies = new TechnologiesResponse
                 {
-                    Data = _technologiesService.GetAllTechnologies().Select(techno => new TechnologyStatistics
+                    Technologies = _technologiesService.GetAllTechnologies().Select(techno => new TechnologyStatistics
                     {
                         TechnologyName = _technologiesService.GetTechnologyName(techno),
-                        CompaniesWithPrimaryTechnologies = new TechnologyStatisticsCompany
+                        CompaniesWithMainTechnologies = new TechnologyStatisticsCompany
                         {
-                            Ids = res.Where(cmp => cmp.PrimaryTechnologies.Contains(techno)).Select(cmp => cmp.Id)
+                            Ids = res.Where(cmp => cmp.MainTechnologies.Contains(techno)).Select(cmp => cmp.Id)
                         },
                         CompaniesWithSecondaryTechnologies = new TechnologyStatisticsCompany
                         {
@@ -140,7 +140,7 @@ namespace Jobs.Aggregator.Core.Services.Implementations
                         JobsWithMainTechnology = new TechnologyStatisticsJob
                         {
                             Ids = res.SelectMany(cmp => cmp.Jobs)
-                                .Where(job => job.Value.PrimaryTechnologies.Contains(techno))
+                                .Where(job => job.Value.MainTechnologies.Contains(techno))
                                 .Select(job => job.Value.Id)
                         },
                         JobsWithSecondaryTechnology = new TechnologyStatisticsJob
@@ -152,9 +152,8 @@ namespace Jobs.Aggregator.Core.Services.Implementations
                     })
                 }
             };
-            File.Create("../../../../linkedin_aggregated.json").Close();
-            await File.WriteAllTextAsync("../../../../linkedin_aggregated.json", JsonSerializer.Serialize(res2));
-            // await _fireStoreJobsService.InsertJobs(res.ToList());
+            File.Create("../../../../index.json").Close();
+            await File.WriteAllTextAsync("../../../../index.json", JsonSerializer.Serialize(res2));
         }
     }
 }

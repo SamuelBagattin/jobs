@@ -8,8 +8,8 @@ namespace Jobs.Aggregator.Core.TransitionModels
     {
         public string Id { get; } = Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Substring(0, 8);
 
-        public HashSet<TechnologiesEnum> PrimaryTechnologies =>
-            Jobs.SelectMany(e => e.Value.PrimaryTechnologies).ToHashSet();
+        public HashSet<TechnologiesEnum> MainTechnologies =>
+            Jobs.SelectMany(e => e.Value.MainTechnologies).ToHashSet();
 
         public HashSet<TechnologiesEnum> SecondaryTechnologies =>
             Jobs.SelectMany(e => e.Value.SecondaryTechnologies).ToHashSet();

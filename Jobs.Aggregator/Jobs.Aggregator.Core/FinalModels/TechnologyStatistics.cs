@@ -6,6 +6,6 @@ namespace Jobs.Aggregator.Core.FinalModels
         public TechnologyStatisticsJob JobsWithMainTechnology { get; set; }
         public TechnologyStatisticsJob JobsWithSecondaryTechnology { get; set; }
         public TechnologyStatisticsCompany CompaniesWithSecondaryTechnologies { get; set; }
-        public TechnologyStatisticsCompany CompaniesWithPrimaryTechnologies { get; set; }
+        public TechnologyStatisticsCompany CompaniesWithMainTechnologies { get; set; }
     }
 }

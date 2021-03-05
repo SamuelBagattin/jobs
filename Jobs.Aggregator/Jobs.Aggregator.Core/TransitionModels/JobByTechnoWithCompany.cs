@@ -4,7 +4,7 @@ namespace Jobs.Aggregator.Core.TransitionModels
 {
     public class JobByTechnoWithCompany
     {
-        public HashSet<TechnologiesEnum> PrimaryTechnologies { get; set; }
+        public HashSet<TechnologiesEnum> MainTechnologies { get; set; }
 
         public HashSet<TechnologiesEnum> SecondaryTechnologies { get; set; }
 

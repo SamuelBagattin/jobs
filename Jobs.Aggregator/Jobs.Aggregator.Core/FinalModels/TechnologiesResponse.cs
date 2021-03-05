@@ -5,7 +5,7 @@ namespace Jobs.Aggregator.Core.FinalModels
 {
     public class TechnologiesResponse
     {
-        public IEnumerable<TechnologyStatistics> Data { get; set; }
-        public int TechnologiesCount => Data.Count();
+        public IEnumerable<TechnologyStatistics> Technologies { get; set; }
+        public int TechnologiesCount => Technologies.Count();
     }
 }

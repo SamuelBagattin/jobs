@@ -5,7 +5,7 @@ namespace Jobs.Aggregator.Core.FinalModels
 {
     public class CompanyResponse
     {
-        public IEnumerable<FinalCompany> Data { get; set; }
-        public int Count => Data.Count();
+        public IEnumerable<FinalCompany> Companies { get; set; }
+        public int Count => Companies.Count();
     }
 }

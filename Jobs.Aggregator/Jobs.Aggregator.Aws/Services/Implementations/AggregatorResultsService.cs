@@ -18,7 +18,7 @@ namespace Jobs.Aggregator.Aws.Services.Implementations
             _s3Service = s3Service;
         }
 
-        public Task UploadAggregatedJobs(Response body)
+        public Task UploadAggregatedJobs(ResponseRoot body)
         {
             return _s3Service.PutObjectAsync(_s3ConfigurationService.DestinationBucketName,
                 _s3ConfigurationService.DestinationFileKey, JsonSerializer.Serialize(body));

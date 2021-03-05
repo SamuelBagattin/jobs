@@ -6,7 +6,7 @@ namespace Jobs.Aggregator.Core.TransitionModels
     public class JobByTechno
     {
         public string Id { get; set; } = Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Substring(0, 8);
-        public HashSet<TechnologiesEnum> PrimaryTechnologies { get; set; }
+        public HashSet<TechnologiesEnum> MainTechnologies { get; set; }
 
         public HashSet<TechnologiesEnum> SecondaryTechnologies { get; set; }
 

@@ -6,7 +6,7 @@ namespace Jobs.Aggregator.Core.FinalModels
 {
     public class TechnologyStatisticsCompany
     {
-        [JsonIgnore] public IEnumerable<string> Ids { get; set; }
+        public IEnumerable<string> Ids { get; set; }
 
         public int Count => Ids.Count();
     }

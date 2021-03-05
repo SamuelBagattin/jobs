@@ -5,58 +5,61 @@ export interface Site {
 
 export interface Job {
   Id: string;
-  PrimaryTechnologies: string[];
+  MainTechnologies: string[];
   SecondaryTechnologies: string[];
   Site: Site[];
-  Title: string;
+  JobTitle: string;
 }
 
-export interface Datum {
+export interface Company {
   Id: string;
-  PrimaryTechnologies: string[];
+  MainTechnologies: string[];
   SecondaryTechnologies: string[];
-  Company: string;
+  CompanyName: string;
   Jobs: Job[];
 }
 
 export interface Companies {
-  Data: Datum[];
+  Companies: Company[];
   Count: number;
 }
 
 export interface JobsWithMainTechnology {
+  Ids: string[];
   Count: number;
 }
 
 export interface JobsWithSecondaryTechnology {
+  Ids: string[];
   Count: number;
 }
 
 export interface CompaniesWithSecondaryTechnologies {
+  Ids: string[];
   Count: number;
 }
 
-export interface CompaniesWithPrimaryTechnologies {
+export interface CompaniesWithMainTechnologies {
+  Ids: string[];
   Count: number;
 }
 
-export interface Datum2 {
+export interface Technology {
   TechnologyName: string;
   JobsWithMainTechnology: JobsWithMainTechnology;
   JobsWithSecondaryTechnology: JobsWithSecondaryTechnology;
   CompaniesWithSecondaryTechnologies: CompaniesWithSecondaryTechnologies;
-  CompaniesWithPrimaryTechnologies: CompaniesWithPrimaryTechnologies;
+  CompaniesWithMainTechnologies: CompaniesWithMainTechnologies;
 }
 
 export interface Technologies {
-  Data: Datum2[];
+  Technologies: Technology[];
   TechnologiesCount: number;
 }
 
 export interface RootObject {
-  Companies: {
-    Data: Datum[];
-    Count: number;
-  };
+  Companies: Companies;
   Technologies: Technologies;
 }
+
+

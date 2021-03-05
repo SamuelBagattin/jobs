@@ -108,6 +108,11 @@
   dependencies:
     "@types/node" "*"
 
+"@types/aws-lambda@^8.10.31":
+  version "8.10.72"
+  resolved "https://registry.yarnpkg.com/@types/aws-lambda/-/aws-lambda-8.10.72.tgz#af2a6eeaf39be9674e3856f1870d9d15cf75e2e0"
+  integrity sha512-jOrTwAhSiUtBIN/QsWNKlI4+4aDtpZ0sr2BRvKW6XQZdspgHUSHPcuzxbzCRiHUiDQ+0026u5TSE38VyIhNnfA==
+
 "@types/body-parser@*", "@types/body-parser@1.19.0":
   version "1.19.0"
   resolved "https://registry.yarnpkg.com/@types/body-parser/-/body-parser-1.19.0.tgz#0685b3c47eb3006ffed117cdd55164b61f80538f"
@@ -409,6 +414,18 @@ apollo-server-express@^2.21.0:
     parseurl "^1.3.2"
     subscriptions-transport-ws "^0.9.16"
     type-is "^1.6.16"
+
+apollo-server-lambda@^2.21.0:
+  version "2.21.0"
+  resolved "https://registry.yarnpkg.com/apollo-server-lambda/-/apollo-server-lambda-2.21.0.tgz#24080382aacfffe5f61480143be73c6424d3e54b"
+  integrity sha512-j96eA4hoo6Umjml3EqjgNd8cdlYHHQY1bMoTYIZO63CYemYRGkuB4j9fumNp+fGwZ1KaENm+H53iTM011VSjpw==
+  dependencies:
+    "@apollographql/graphql-playground-html" "1.6.26"
+    "@types/aws-lambda" "^8.10.31"
+    apollo-server-core "^2.21.0"
+    apollo-server-env "^3.0.0"
+    apollo-server-types "^0.6.3"
+    graphql-tools "^4.0.8"
 
 apollo-server-plugin-base@^0.10.4:
   version "0.10.4"

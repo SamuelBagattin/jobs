@@ -5,6 +5,6 @@ namespace Jobs.Aggregator.Aws.Services.Contracts
 {
     public interface IAggregatorResultsService
     {
-        Task UploadAggregatedJobs(Response body);
+        Task UploadAggregatedJobs(ResponseRoot body);
     }
 }
