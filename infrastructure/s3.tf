@@ -9,6 +9,10 @@ resource "aws_s3_bucket" "scraper_results" {
 resource "aws_s3_bucket" "aggregated_results" {
   bucket = "jobs-aggregator-results"
   acl = "private"
+  cors_rule {
+    allowed_methods = ["GET"]
+    allowed_origins = ["*"]
+  }
   tags = {
     Name = "jobs-aggregator-results"
     Project = "Jobs Scraper"

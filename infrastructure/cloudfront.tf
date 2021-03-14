@@ -25,14 +25,14 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   }
 
   default_cache_behavior {
-    allowed_methods  = ["GET", "HEAD"]
-    cached_methods   = ["GET", "HEAD"]
+    allowed_methods  = ["GET", "HEAD", "OPTIONS"]
+    cached_methods   = ["GET", "HEAD", "OPTIONS"]
     target_origin_id = local.s3_origin_id
     compress = true
 
     forwarded_values {
       query_string = false
-
+      headers = ["Access-Control-Request-Headers", "Access-Control-Request-Method", "Origin"]
       cookies {
         forward = "none"
       }
