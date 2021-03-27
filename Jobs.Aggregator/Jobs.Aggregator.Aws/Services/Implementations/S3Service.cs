@@ -28,6 +28,11 @@ namespace Jobs.Aggregator.Aws.Services.Implementations
 
         public async Task PutObjectAsync(string bucketName, string key, string body)
         {
+            if (bucketName is null)
+            {
+                throw new Exception("");
+            }
+            
             try
             {
                 var request = new PutObjectRequest

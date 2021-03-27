@@ -134,10 +134,10 @@ namespace Jobs.Aggregator.Core.Services.Implementations
             };
 
 
-        public IEnumerable<TechnologiesEnum> GetTechnologies(string title)
+        public IEnumerable<TechnologiesEnum> GetTechnologies(string text)
         {
             return TechnosData.Where(
-                    keyValuePair => TechnosData[keyValuePair.Key].Regex.IsMatch(title))
+                    keyValuePair => TechnosData[keyValuePair.Key].Regex.IsMatch(text))
                 .Select(keyValuePair => keyValuePair.Key).ToList();
         }
 
