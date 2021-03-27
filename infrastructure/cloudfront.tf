@@ -1,11 +1,7 @@
-locals {
-  s3_origin_id = "myS3Origin"
-}
-
 resource "aws_cloudfront_distribution" "s3_distribution" {
   origin {
     domain_name = aws_s3_bucket.aggregated_results.bucket_regional_domain_name
-    origin_id   = local.s3_origin_id
+    origin_id   = local.website_origin_id
 
     s3_origin_config {
       origin_access_identity = aws_cloudfront_origin_access_identity.origin_access_identity.cloudfront_access_identity_path
@@ -14,7 +10,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
 
   enabled             = true
   is_ipv6_enabled     = true
-  comment             = "Some comment"
+  comment             = local.website_distribution_name
   default_root_object = "index.html"
 
   aliases = [local.website_domain]
@@ -27,7 +23,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   default_cache_behavior {
     allowed_methods  = ["GET", "HEAD"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = local.s3_origin_id
+    target_origin_id = local.website_origin_id
     compress = true
 
     forwarded_values {
@@ -55,6 +51,6 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
 
 
   tags = {
-    Environment = "production"
+    Project = local.project_name
   }
 }
