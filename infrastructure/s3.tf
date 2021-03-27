@@ -1,17 +1,17 @@
 resource "aws_s3_bucket" "scraper_results" {
-  bucket = "jobs-scraper-results"
+  bucket = local.scraper_results_bucket_name
   acl = "private"
   tags = {
-    Name = "scraper-results"
-    Project = "Jobs Scraper"
+    Name = local.scraper_results_bucket_name
+    Project = local.project_name
   }
 }
 resource "aws_s3_bucket" "aggregated_results" {
-  bucket = "jobs-aggregator-results"
+  bucket = local.aggregator_results_bucket_name
   acl = "private"
   tags = {
-    Name = "jobs-aggregator-results"
-    Project = "Jobs Scraper"
+    Name = local.aggregator_results_bucket_name
+    Project = local.project_name
   }
 }
 

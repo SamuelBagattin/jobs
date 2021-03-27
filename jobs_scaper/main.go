@@ -3,8 +3,10 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"jobs_scaper/pkg/env"
 	"jobs_scaper/pkg/scraping"
 	"jobs_scaper/pkg/upload"
 	"log"
@@ -13,6 +15,17 @@ import (
 
 func main() {
 
+	if *env.IsRunningOnLambda() {
+		lambda.Start(func() {
+			scrape()
+		})
+	} else {
+		scrape()
+	}
+
+}
+
+func scrape() {
 	defer func() {
 		if err := recover(); err != nil {
 			fmt.Println(err)
