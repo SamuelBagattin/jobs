@@ -8,6 +8,7 @@ locals {
   scraper_iam_role_name = "${local.project_name}-scraper-role"
   scraper_iam_policy_name = "${local.project_name}-scraper-policy"
   scraper_policy_attachment = "${local.project_name}-scraper-policy-attachment"
+  scraper_event_trigger_name = "${local.project_name}-scraper-trigger-eventbridget-rule"
   website_distribution_name = "${local.project_name}-website-distribution"
   website_origin_id = "${local.project_name}-website-origin"
 }

@@ -70,7 +70,7 @@ func scrape() {
 				log.Println("failed to serialize response:", err)
 				return
 			}
-			s3ScrapClient.UploadToFileByte(client.GetConfig().SiteName, b)
+			s3ScrapClient.UploadToFileByte(client.GetConfig().SiteName, b, "application/json")
 		}()
 	}
 	wg.Wait()

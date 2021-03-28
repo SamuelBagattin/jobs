@@ -5,18 +5,35 @@ resource "aws_lambda_function" "scraper" {
   runtime = "go1.x"
   filename = "main.zip"
   timeout = 900
+
   environment {
     variables = {
       ON_LAMBDA: true
+      RESULTS_BUCKET_NAME: aws_s3_bucket.scraper_results.bucket
     }
   }
 
-  provider = "aws.paris"
+  tags = {
+    Project: local.project_name
+    Name: local.scraper_iam_role_name
+  }
+
+  provider = aws.paris
 }
 
 resource "aws_iam_role" "lambda_scraper" {
   name = local.scraper_iam_role_name
   assume_role_policy = data.aws_iam_policy_document.scraper_assume_role.json
+  tags = {
+    Project: local.project_name
+    Name: local.scraper_iam_role_name
+  }
+}
+
+resource "aws_iam_policy_attachment" "scraper_attachment_to_basicrole" {
+  name = "${local.scraper_policy_attachment}_to_basicexecutionrole"
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+  roles = [aws_iam_role.lambda_scraper.name]
 }
 
 resource "aws_iam_policy_attachment" "scraper_attachment" {
@@ -46,13 +63,50 @@ resource "aws_iam_policy" "scraper_policy" {
 data "aws_iam_policy_document" "scraper_policy"{
   version = "2012-10-17"
   statement {
-    actions = ["s3:GetObject", "s3:PutObject", "s3:*"]
+    actions = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"]
     effect = "Allow"
     resources = ["${aws_s3_bucket.scraper_results.arn}/*"]
   }
   statement {
-    actions = ["s3:*"]
+    actions = ["s3:ListBucket"]
     effect = "Allow"
     resources = [aws_s3_bucket.scraper_results.arn]
   }
+}
+
+resource "aws_s3_bucket" "scraper_results" {
+  bucket = local.scraper_results_bucket_name
+  acl = "private"
+  tags = {
+    Name = local.scraper_results_bucket_name
+    Project = local.project_name
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "scraper_trigger" {
+  name = local.scraper_event_trigger_name
+  schedule_expression = "cron(0 10 * * ? *)"
+  tags = {
+    Project: local.project_name
+    Name: local.scraper_event_trigger_name
+  }
+
+  provider = aws.paris
+}
+
+resource "aws_cloudwatch_event_target" "scraper_target" {
+  arn = aws_lambda_function.scraper.arn
+  rule = aws_cloudwatch_event_rule.scraper_trigger.name
+
+  provider = aws.paris
+}
+
+resource "aws_lambda_permission" "eventbridge_to_scraper_lambda" {
+  function_name = aws_lambda_function.scraper.function_name
+  statement_id  = "AllowExecutionFromCloudWatch"
+  action        = "lambda:InvokeFunction"
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.scraper_trigger.arn
+
+  provider = aws.paris
 }
