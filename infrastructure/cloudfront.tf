@@ -49,6 +49,8 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     }
   }
 
+  wait_for_deployment = false
+
 
   tags = {
     Project = local.project_name

@@ -4,4 +4,5 @@ data "aws_route53_zone" "samuelbagattin" {
 
 data "aws_acm_certificate" "samuelbagattin" {
   domain   = local.base_domain
+  provider = aws.nvirignia
 }

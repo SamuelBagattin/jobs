@@ -48,7 +48,7 @@ func scrape() {
 	scrapingClients = append(scrapingClients, monsterClient)
 
 	sess := session.Must(session.NewSession(&aws.Config{
-		Region: aws.String("us-east-1"),
+		Region: aws.String("eu-west-3"),
 	}))
 
 	var s3ScrapClient = upload.NewS3Client(sess)

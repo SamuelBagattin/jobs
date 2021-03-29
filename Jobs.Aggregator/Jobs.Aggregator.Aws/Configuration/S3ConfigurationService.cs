@@ -1,3 +1,5 @@
+using System;
+using Jobs.Aggregator.Aws.Exceptions;
 using Microsoft.Extensions.Configuration;
 
 namespace Jobs.Aggregator.Aws.Configuration
@@ -11,8 +13,8 @@ namespace Jobs.Aggregator.Aws.Configuration
             _configuration = configuration;
         }
 
-        public string SourceDataBucketName => _configuration["aws:s3:source_data_bucket_name"];
-        public string DestinationBucketName => _configuration["aws:s3:destination_bucket_name"];
+        public string SourceDataBucketName => Environment.GetEnvironmentVariable("SOURCE_DATA_BUCKET_NAME") ?? throw new MissingEnvironmentVariableException("SOURCE_DATA_BUCKET_NAME");
+        public string DestinationBucketName => Environment.GetEnvironmentVariable("DESTINATION_DATA_BUCKET_NAME") ?? throw new MissingEnvironmentVariableException("DESTINATION_DATA_BUCKET_NAME");
         public string DestinationFileKey => _configuration["aws:s3:destination_file_key"];
 
         public string UploadResults => _configuration["aws:s3:upload_results"];

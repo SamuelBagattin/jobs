@@ -17,13 +17,14 @@ namespace Jobs.Aggregator.Core.Services.Implementations
         private readonly ILogger<AggregatorService> _logger;
         private readonly IScraperResultsService _scraperResultsService;
         private readonly ITechnologiesService _technologiesService;
-
+        private readonly IAggregatorResultsService _aggregatorResultsService;
+        
         public AggregatorService(
             IScraperResultsService scraperResultsService,
             ITechnologiesService technologiesService,
-            ILogger<AggregatorService> logger
-        )
+            ILogger<AggregatorService> logger, IAggregatorResultsService aggregatorResultsService)
         {
+            _aggregatorResultsService = aggregatorResultsService;
             (_scraperResultsService, _technologiesService, _logger) =
                 (scraperResultsService, technologiesService, logger);
         }
@@ -154,6 +155,7 @@ namespace Jobs.Aggregator.Core.Services.Implementations
             };
             File.Create("../../../../index.json").Close();
             await File.WriteAllTextAsync("../../../../index.json", JsonSerializer.Serialize(res2));
+            await _aggregatorResultsService.UploadAggregatedJobs(res2);
         }
     }
 }

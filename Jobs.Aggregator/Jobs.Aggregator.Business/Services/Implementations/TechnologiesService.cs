@@ -12,7 +12,7 @@ namespace Jobs.Aggregator.Core.Services.Implementations
 
 
         private static readonly Dictionary<TechnologiesEnum, TechnologyData> TechnosData =
-            new()
+            new Dictionary<TechnologiesEnum, TechnologyData>()
             {
                 {
                     TechnologiesEnum.Java,

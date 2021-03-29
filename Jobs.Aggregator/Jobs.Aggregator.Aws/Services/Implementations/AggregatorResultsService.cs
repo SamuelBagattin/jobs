@@ -9,12 +9,12 @@ namespace Jobs.Aggregator.Aws.Services.Implementations
 {
     public class AggregatorResultsService : IAggregatorResultsService
     {
-        private readonly S3ConfigurationService _s3ConfigurationService;
+        private readonly IS3ConfigurationService _s3ConfigurationService;
         private readonly IS3Service _s3Service;
 
-        public AggregatorResultsService(IOptions<S3ConfigurationService> s3Options, IS3Service s3Service)
+        public AggregatorResultsService(IS3ConfigurationService s3ConfigurationService, IS3Service s3Service)
         {
-            _s3ConfigurationService = s3Options.Value;
+            _s3ConfigurationService = s3ConfigurationService;
             _s3Service = s3Service;
         }
 
