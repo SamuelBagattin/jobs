@@ -2,20 +2,19 @@ package upload
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"jobs_scaper/pkg/env"
 	"log"
-	"time"
 )
 
 func NewS3Client(sess *session.Session) *S3ScrapingClient {
 	return &S3ScrapingClient{
 		s3uploader: s3manager.NewUploader(sess),
 		config: &S3ScrapingClientConfig{
-			BucketName: "jobs-scraper-results",
+			BucketName: env.GetUploadBucketName(),
 		},
 		s3: s3.New(sess),
 	}
@@ -28,26 +27,21 @@ type S3ScrapingClient struct {
 }
 
 type S3ScrapingClientConfig struct {
-	BucketName string
+	BucketName *string
 }
 
-func (s *S3ScrapingClient) UploadToFileString(fileName string, content string) {
+func (s *S3ScrapingClient) UploadToFileString(fileName string, content string, contentType string) {
 	var contentBytes = []byte(content)
-	s.UploadToFileByte(fileName, contentBytes)
+	s.UploadToFileByte(fileName, contentBytes, contentType)
 }
 
-func (s *S3ScrapingClient) UploadToFileByte(fileName string, content []byte) {
+func (s *S3ScrapingClient) UploadToFileByte(fileName string, content []byte, contentType string) {
 	if len(content) == 0 {
 		return
 	}
 
-	var date = time.Now()
-	var prefix = fmt.Sprintf("%d-%d-%d", date.Year(), date.Month(), date.Day())
-	var objectKey = prefix + "/" + fileName
-
 	response, errr := s.s3.ListObjects(&s3.ListObjectsInput{
-		Bucket: aws.String(s.config.BucketName),
-		Prefix: aws.String(prefix),
+		Bucket: s.config.BucketName,
 	})
 	if errr != nil {
 		panic(errr)
@@ -56,16 +50,16 @@ func (s *S3ScrapingClient) UploadToFileByte(fileName string, content []byte) {
 	objectExists := false
 
 	for _, object := range response.Contents {
-		if *object.Key == objectKey {
+		if *object.Key == fileName {
 			objectExists = true
 		}
 	}
 
 	if objectExists {
-		log.Printf("%s already exists in bucket %s, deleting", objectKey, s.config.BucketName)
+		log.Printf("%s already exists in bucket %s, deleting", fileName, *s.config.BucketName)
 		_, err := s.s3.DeleteObject(&s3.DeleteObjectInput{
-			Bucket: aws.String(s.config.BucketName),
-			Key:    &objectKey,
+			Bucket: s.config.BucketName,
+			Key:    &fileName,
 		})
 		if err != nil {
 			panic(err)
@@ -73,9 +67,10 @@ func (s *S3ScrapingClient) UploadToFileByte(fileName string, content []byte) {
 	}
 
 	_, err := s.s3uploader.Upload(&s3manager.UploadInput{
-		Bucket: aws.String(s.config.BucketName),
-		Key:    aws.String(objectKey),
-		Body:   bytes.NewReader(content),
+		Bucket:      s.config.BucketName,
+		Key:         aws.String(fileName),
+		Body:        bytes.NewReader(content),
+		ContentType: &contentType,
 	})
 	if err != nil {
 		panic(err)

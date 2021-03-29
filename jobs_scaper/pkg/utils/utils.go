@@ -36,6 +36,6 @@ func RandStringBytesMaskImprSrcUnsafe(n int) string {
 
 // Generates duration between 0.5 and 1.5 seconds
 func RandScrapingInterval() time.Duration {
-	i := int(rand.Float32()*1000 + 500)
+	i := int(rand.Float32()*1000 + 1000)
 	return time.Millisecond * time.Duration(i)
 }

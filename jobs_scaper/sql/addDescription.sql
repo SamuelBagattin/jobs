@@ -1,2 +1,0 @@
-ALTER TABLE jobs
-    ADD COLUMN Description VARCHAR(50000);

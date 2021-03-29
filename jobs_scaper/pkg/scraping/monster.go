@@ -1,18 +1,55 @@
 package scraping
 
 import (
-	"fmt"
-	"github.com/gocolly/colly/v2"
+	"bytes"
+	"encoding/json"
+	"github.com/aws/aws-sdk-go/aws"
+	"io/ioutil"
 	"jobs_scaper/pkg/utils"
 	"log"
+	"net/http"
 	"net/url"
-	"strings"
+	"strconv"
 	"time"
 )
 
 type MonsterClient struct {
 	config     *ClientConfig
 	maxResults *int
+	apiConfig  struct {
+		searchJobsUrl *string
+	}
+}
+
+type monsterApiSearchJobsRequest struct {
+	JobQuery monsterApiSearchJobsJobQuery `json:"jobQuery"`
+	Offset   int                          `json:"offset"`
+	PageSize int                          `json:"pageSize"`
+}
+
+type monsterApiSearchJobsJobQuery struct {
+	Locations []monsterApiSearchJobsLocation `json:"locations"`
+	Query     string                         `json:"query"`
+}
+
+type monsterApiSearchJobsLocation struct {
+	Address string `json:"address"`
+	Country string `json:"country"`
+}
+
+type monsterApiSearchJobsResponse struct {
+	TotalSize          int `json:"totalSize"`
+	EstimatedTotalSize int `json:"estimatedTotalSize"`
+	JobResults         []struct {
+		JobPosting struct {
+			Description        string `json:"description"`
+			Url                string `json:"url"`
+			Title              string `json:"title"`
+			HiringOrganization struct {
+				Name string `json:"name"`
+			} `json:"hiringOrganization"`
+		} `json:"jobPosting"`
+	} `json:"jobResults"`
 }
 
 func NewMonsterClient() (*MonsterClient, error) {
@@ -20,11 +57,17 @@ func NewMonsterClient() (*MonsterClient, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return &MonsterClient{
 		config: &ClientConfig{
 			SiteName:     "monster",
 			SiteBasePath: baseUrl,
 			SiteOrigin:   baseUrl.Host,
+		},
+		apiConfig: struct {
+			searchJobsUrl *string
+		}{
+			searchJobsUrl: aws.String("https://services.monster.io/jobs-svx-service/v2/monster/search-jobs/samsearch/fr-fr"),
 		},
 	}, nil
 }
@@ -34,99 +77,103 @@ func (m *MonsterClient) GetConfig() *ClientConfig {
 }
 
 func (m *MonsterClient) Scrape() (*[]*JobInfo, error) {
-	var descCounter = 0
-	var visitUrl = m.config.SiteBasePath.String() + "/emploi/recherche/?q=d__C3__A9veloppeur&where=bordeaux&cy=fr&stpage=10&page=10"
+	var scrapedResults []*JobInfo
 
-	c := colly.NewCollector(
-		//colly.Async(true),
-		colly.AllowURLRevisit(),
-		colly.UserAgent("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.101 Safari/537.36"),
-	)
-
-	c.OnRequest(func(req *colly.Request) {
-		req.Headers.Add("Connection", "keep-alive")
-		req.Headers.Add("Cache-Control", "max-age=0")
-		req.Headers.Add("Upgrade-Insecure-Requests", "1")
-		req.Headers.Add("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.101 Safari/537.36")
-		req.Headers.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9")
-		req.Headers.Add("Sec-GPC", "1")
-		req.Headers.Add("Sec-Fetch-Site", "same-origin")
-		req.Headers.Add("Sec-Fetch-Mode", "navigate")
-		req.Headers.Add("Sec-Fetch-User", "?1")
-		req.Headers.Add("Sec-Fetch-Dest", "document")
-		req.Headers.Add("Referer", "https://www.monster.fr/emploi/recherche?q=d%c3%a9veloppeur&,,=&cy=fr&rad=20")
-		req.Headers.Add("Accept-Language", "en-US,en;q=0.9")
-	})
-
-	var page []*JobInfo
-
-	// extract status code
-	c.OnResponse(func(r *colly.Response) {
-		//fmt.Println(string(r.Body))
-		log.Println("response received", r.StatusCode)
-	})
-	c.OnRequest(func(request *colly.Request) {
-		log.Println("visiting", request.URL)
-	})
-	c.OnError(func(r *colly.Response, err error) {
-		log.Println("error:", r.StatusCode, err, r.Headers)
-	})
-	c.OnHTML("#SearchResults>.card-content[data-jobid]", func(element *colly.HTMLElement) {
-		cDescription := c.Clone()
-		cDescription.OnRequest(func(req *colly.Request) {
-			req.Headers.Add("Connection", "keep-alive")
-			req.Headers.Add("Upgrade-Insecure-Requests", "1")
-			req.Headers.Add("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.101 Safari/537.36")
-			req.Headers.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9")
-			req.Headers.Add("Sec-GPC", "1")
-			req.Headers.Add("Sec-Fetch-Site", "same-site")
-			req.Headers.Add("Sec-Fetch-Mode", "navigate")
-			req.Headers.Add("Sec-Fetch-User", "?1")
-			req.Headers.Add("Sec-Fetch-Dest", "document")
-			req.Headers.Add("Referer", "https://www.monster.fr/")
-			req.Headers.Add("Accept-Language", "en-US,en;q=0.9")
-		})
-
-		cDescription.OnError(func(r *colly.Response, err error) {
-			log.Println("error description:", r.StatusCode, err, r.Headers)
-		})
-
-		cDescription.OnResponse(func(r *colly.Response) {
-			log.Println("response received description", r.StatusCode)
-		})
-
-		job := JobInfo{
-			Site: "monster",
-			Id:   utils.RandStringBytesMaskImprSrcUnsafe(6),
-			Date: time.Now(),
-		}
-
-		cDescription.OnHTML("#JobDescription", func(desc *colly.HTMLElement) {
-			descCounter++
-			log.Println(descCounter)
-			job.Description = strings.TrimSpace(desc.Text)
-		})
-
-		element.ForEach(".title>a", func(i int, element *colly.HTMLElement) {
-			job.Url = strings.TrimSpace(element.Attr("href"))
-			job.Title = strings.TrimSpace(element.Text)
-			//time.Sleep(RandScrapingInterval())
-			errDesc := cDescription.Visit(job.Url)
-			if errDesc != nil {
-				fmt.Println("Error :", errDesc)
-			}
-		})
-		element.ForEach(".company>.name", func(i int, element *colly.HTMLElement) {
-			job.Company = strings.TrimSpace(element.Text)
-		})
-		page = append(page, &job)
-	})
-
-	err := c.Visit(visitUrl)
-	if err != nil {
-		return nil, err
+	request := monsterApiSearchJobsRequest{
+		JobQuery: monsterApiSearchJobsJobQuery{
+			Locations: []monsterApiSearchJobsLocation{
+				{Address: "bordeaux", Country: "fr"},
+			},
+			Query: "developpeur",
+		},
+		Offset:   0,
+		PageSize: 100,
 	}
-	c.Wait()
-	return &page, nil
+
+	log.Println("Requesting jobs, offset :" + strconv.Itoa(request.Offset))
+	res, err := m.searchJobs(&request)
+	if err != nil {
+		panic(err)
+	}
+	for {
+		for _, el := range res.JobResults {
+			scrapedResults = append(scrapedResults, &JobInfo{
+				Title:       el.JobPosting.Title,
+				Company:     el.JobPosting.HiringOrganization.Name,
+				Site:        m.config.SiteName,
+				Url:         el.JobPosting.Url,
+				Date:        time.Now(),
+				Id:          utils.RandStringBytesMaskImprSrcUnsafe(6),
+				Description: el.JobPosting.Description,
+			})
+		}
+		log.Printf("%v, %v", len(res.JobResults), res.EstimatedTotalSize)
+		if res.EstimatedTotalSize <= len(scrapedResults) {
+			break
+		}
+		request.Offset = len(scrapedResults)
+		log.Println("Requesting jobs, offset :" + strconv.Itoa(request.Offset))
+		res2, err2 := m.searchJobs(&request)
+		res = res2
+		if err2 != nil {
+			panic(err2)
+		}
+	}
+
+	return &scrapedResults, nil
+}
+
+func (m *MonsterClient) searchJobs(request *monsterApiSearchJobsRequest) (*monsterApiSearchJobsResponse, error) {
+	apiUrl := m.apiConfig.searchJobsUrl
+	method := http.MethodPost
+
+	jsonPayload, marshalErr := json.Marshal(request)
+	if marshalErr != nil {
+		panic(marshalErr)
+	}
+	payload := bytes.NewReader(jsonPayload)
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, *apiUrl, payload)
+
+	if err != nil {
+		panic(err)
+	}
+	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0")
+	req.Header.Add("Accept", "application/json, text/plain, */*")
+	req.Header.Add("Accept-Language", "en-US,fr;q=0.8,fr-FR;q=0.5,en;q=0.3")
+	req.Header.Add("Referer", "https://www.monster.fr/emploi/recherche/?q=d%C3%A9veloppeur&where=bordeaux&cy=fr&stpage=10&page=10")
+	req.Header.Add("Content-Type", "application/json;charset=utf-8")
+	req.Header.Add("Origin", "https://www.monster.fr")
+	req.Header.Add("Connection", "keep-alive")
+	req.Header.Add("TE", "Trailers")
+
+	res, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer func() {
+		err = res.Body.Close()
+		if err != nil {
+			panic(err)
+		}
+	}()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		panic(err)
+	}
+
+	var result monsterApiSearchJobsResponse
+	unmarshalErr := json.Unmarshal(body, &result)
+	if unmarshalErr != nil {
+		panic(unmarshalErr)
+	}
+
+	if err := recover(); err != nil {
+		return nil, err.(error)
+	}
+
+	return &result, nil
 
 }

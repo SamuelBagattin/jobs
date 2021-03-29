@@ -1,0 +1,18 @@
+---
+
+- name: Get scraper_dir
+  shell: echo "$(git rev-parse --show-toplevel)/jobs_scaper"
+  register: scraper_dir
+
+- name: "Build"
+  shell: cd {{scraper_dir.stdout}} && go build -o /tmp/scraper/main
+  environment:
+    - GOARCH: amd64
+    - GOOS: linux
+
+- name: Zip
+  shell: zip -j /tmp/scraper/main.zip /tmp/scraper/main
+
+- name: "Deploy to lambda"
+  shell: aws lambda update-function-code --function-name jobs-scraper-lambda --region eu-west-3 --zip-file fileb:///tmp/scraper/main.zip
+
