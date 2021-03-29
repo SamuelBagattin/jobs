@@ -62,4 +62,3 @@ jobs:
         release_name: Release ${{ steps.gitversion.outputs.semVer }}
         draft: false
         prerelease: false
-          prerelease: false
