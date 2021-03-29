@@ -1,6 +1,9 @@
 name: Create github release
 
-on: [pull_request, issues]
+on: 
+  push:
+    branches:
+      - main
 
 jobs:
   Github Release:
