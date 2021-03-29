@@ -14,5 +14,5 @@
   shell: zip -j /tmp/scraper/main.zip /tmp/scraper/main
 
 - name: "Deploy to lambda"
-  shell: aws lambda update-function-code --function-name jobs-scrape-lambda --zip-file fileb:///tmp/scraper/main.zip
+  shell: aws lambda update-function-code --function-name jobs-scraper-lambda --region eu-west-3 --zip-file fileb:///tmp/scraper/main.zip
 
