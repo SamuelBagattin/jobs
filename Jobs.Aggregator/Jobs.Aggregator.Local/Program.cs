@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Amazon.CloudFront;
 using Amazon.S3;
 using Jobs.Aggregator.Aws.Configuration;
 using Jobs.Aggregator.Aws.Services.Contracts;
@@ -12,16 +13,16 @@ namespace Jobs.Aggregator.Local
 {
     internal static class Program
     {
-        private static async Task Main(string[] args)
+        private static async Task Main()
         {
-            using var host = CreateHostBuilder(args).Build();
+            using var host = CreateHostBuilder().Build();
             await host.StartAsync();
             await host.Services.GetRequiredService<IAggregatorService>().Aggregate();
         }
 
-        private static IHostBuilder CreateHostBuilder(string[] args)
+        private static IHostBuilder CreateHostBuilder()
         {
-            return Host.CreateDefaultBuilder(args)
+            return Host.CreateDefaultBuilder()
                 .ConfigureServices((_, services) =>
                     services
                         .AddTransient<ITechnologiesService, TechnologiesService>()
@@ -29,8 +30,10 @@ namespace Jobs.Aggregator.Local
                         .AddTransient<IAggregatorResultsService, AggregatorResultsService>()
                         .AddTransient<IScraperResultsService, ScraperResultsService>()
                         .AddTransient<IS3Service, S3Service>()
-                        .AddTransient<IS3ConfigurationService, S3ConfigurationService>()
+                        .AddTransient<ICloudfrontService, CloudfrontService>()
+                        .AddTransient<IAwsConfigurationService, AwsConfigurationService>()
                         .AddAWSService<IAmazonS3>()
+                        .AddAWSService<IAmazonCloudFront>()
                 );
         }
     }

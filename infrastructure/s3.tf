@@ -1,8 +1,8 @@
 resource "aws_s3_bucket" "aggregated_results" {
   bucket = local.aggregator_results_bucket_name
-  acl = "private"
+  acl    = "private"
   tags = {
-    Name = local.aggregator_results_bucket_name
+    Name    = local.aggregator_results_bucket_name
     Project = local.project_name
   }
 }

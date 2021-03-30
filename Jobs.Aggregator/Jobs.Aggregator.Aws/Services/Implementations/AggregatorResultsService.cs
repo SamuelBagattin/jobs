@@ -9,19 +9,22 @@ namespace Jobs.Aggregator.Aws.Services.Implementations
 {
     public class AggregatorResultsService : IAggregatorResultsService
     {
-        private readonly IS3ConfigurationService _s3ConfigurationService;
+        private readonly IAwsConfigurationService _iawsConfigurationService;
         private readonly IS3Service _s3Service;
+        private readonly ICloudfrontService _cloudfrontService;
 
-        public AggregatorResultsService(IS3ConfigurationService s3ConfigurationService, IS3Service s3Service)
+        public AggregatorResultsService(IAwsConfigurationService iawsConfigurationService, IS3Service s3Service, ICloudfrontService cloudfrontService)
         {
-            _s3ConfigurationService = s3ConfigurationService;
+            _iawsConfigurationService = iawsConfigurationService;
             _s3Service = s3Service;
+            _cloudfrontService = cloudfrontService;
         }
 
-        public Task UploadAggregatedJobs(ResponseRoot body)
+        public async Task UploadAggregatedJobs(ResponseRoot body)
         {
-            return _s3Service.PutObjectAsync(_s3ConfigurationService.DestinationBucketName,
-                _s3ConfigurationService.DestinationFileKey, JsonSerializer.Serialize(body));
+            await _s3Service.PutObjectAsync(_iawsConfigurationService.DestinationBucketName,
+                _iawsConfigurationService.DestinationFileKey, JsonSerializer.Serialize(body));
+            await _cloudfrontService.CreateInvalidationByPath(_iawsConfigurationService.DestinationCloudfrontDistributionId, $"/{_iawsConfigurationService.DestinationFileKey}");
         }
     }
 }

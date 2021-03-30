@@ -11,24 +11,24 @@ namespace Jobs.Aggregator.Aws.Services.Implementations
     public class ScraperResultsService : IScraperResultsService
     {
         private readonly ILogger<ScraperResultsService> _logger;
-        private readonly IS3ConfigurationService _s3ConfigurationService;
+        private readonly IAwsConfigurationService _iawsConfigurationService;
         private readonly IS3Service _s3Service;
 
         public ScraperResultsService(ILogger<ScraperResultsService> logger, IS3Service s3Service,
-            IS3ConfigurationService s3ConfigurationService)
+            IAwsConfigurationService iawsConfigurationService)
         {
             _logger = logger;
             _s3Service = s3Service;
-            _s3ConfigurationService = s3ConfigurationService;
+            _iawsConfigurationService = iawsConfigurationService;
         }
 
 
         public async Task<IEnumerable<Job>> GetAllScrapedJobs()
         {
-            var objectList = await _s3Service.ListObjectsKeysAsync(_s3ConfigurationService.SourceDataBucketName);
+            var objectList = await _s3Service.ListObjectsKeysAsync(_iawsConfigurationService.SourceDataBucketName);
             var test = objectList.Select(async e =>
             {
-                var jsonData = await _s3Service.ReadObjectDataAsync(_s3ConfigurationService.SourceDataBucketName, e);
+                var jsonData = await _s3Service.ReadObjectDataAsync(_iawsConfigurationService.SourceDataBucketName, e);
                 return JsonSerializer.Deserialize<Job[]>(jsonData);
             });
             var truc = await Task.WhenAll(test);

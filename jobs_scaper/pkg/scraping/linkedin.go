@@ -3,8 +3,8 @@ package scraping
 import (
 	"fmt"
 	"github.com/gocolly/colly/v2"
+	log "github.com/sirupsen/logrus"
 	"jobs_scaper/pkg/utils"
-	"log"
 	"net/url"
 	"strconv"
 	"strings"
@@ -12,6 +12,7 @@ import (
 )
 
 func NewLinkedinClient() (*LinkedinClient, error) {
+	log.Trace("Initiating linkedin client")
 	var baseUrl, err = url.Parse("https://fr.linkedin.com")
 	if err != nil {
 		return nil, err
@@ -31,6 +32,7 @@ type LinkedinClient struct {
 }
 
 func (l *LinkedinClient) Scrape() (*[]*JobInfo, error) {
+	log.Trace(l.logWithName("Start scraping"))
 	var i = 0
 	var visitUrl = l.getNextPageUrl(&i)
 	c := colly.NewCollector(
@@ -50,22 +52,20 @@ func (l *LinkedinClient) Scrape() (*[]*JobInfo, error) {
 
 	var page []*JobInfo
 
-	// extract status code
-	c.OnResponse(func(r *colly.Response) {
-		log.Println("response received", r.StatusCode)
-	})
 	c.OnScraped(func(response *colly.Response) {
 		i = len(page)
-		fmt.Printf("%v", i)
+		log.Debug(l.logWithName(fmt.Sprintf("%v", i)))
 		if i <= 300 {
+			log.Trace(l.logWithName("Visiting next page: " + l.getNextPageUrl(&i)))
 			visitError := c.Visit(l.getNextPageUrl(&i))
 			if visitError != nil {
+				log.Error("Error while visiting: " + l.getNextPageUrl(&i))
 				panic(visitError)
 			}
 		}
 	})
 	c.OnError(func(r *colly.Response, err error) {
-		log.Println("error:", r.StatusCode, err, string(r.Body))
+		log.Println(l.logWithName("Error while visiting: "), r.Request.URL.String(), r.StatusCode, err, string(r.Body))
 	})
 	c.OnHTML(".result-card.job-result-card.result-card--with-hover-state", func(element *colly.HTMLElement) {
 		cDescription := c.Clone()
@@ -84,15 +84,15 @@ func (l *LinkedinClient) Scrape() (*[]*JobInfo, error) {
 		})
 
 		cDescription.OnError(func(r *colly.Response, err error) {
-			log.Println("error description:", r.StatusCode, err, r.Headers)
+			log.Warning(l.logWithName("error description:"), r.StatusCode, err, r.Headers)
 		})
 
 		cDescription.OnResponse(func(r *colly.Response) {
-			log.Println("response received description", r.StatusCode)
+			log.Println(l.logWithName("response received description"), r.StatusCode)
 		})
 
 		job := JobInfo{
-			Site: "linkedin",
+			Site: l.config.SiteName,
 			Id:   utils.RandStringBytesMaskImprSrcUnsafe(6),
 			Date: time.Now(),
 		}
@@ -106,7 +106,7 @@ func (l *LinkedinClient) Scrape() (*[]*JobInfo, error) {
 			time.Sleep(utils.RandScrapingInterval())
 			errDesc := cDescription.Visit(job.Url)
 			if errDesc != nil {
-				panic(errDesc)
+				log.Error("Error while visiting description: " + job.Url)
 			}
 		})
 		element.ForEach(".screen-reader-text", func(i int, element *colly.HTMLElement) {
@@ -133,4 +133,8 @@ func (l *LinkedinClient) getNextPageUrl(resultsCount *int) string {
 
 func (l LinkedinClient) GetConfig() *ClientConfig {
 	return l.config
+}
+
+func (l *LinkedinClient) logWithName(msg string) string {
+	return fmt.Sprintf("%s: %s", l.config.SiteName, msg)
 }

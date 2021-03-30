@@ -24,7 +24,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     allowed_methods  = ["GET", "HEAD"]
     cached_methods   = ["GET", "HEAD"]
     target_origin_id = local.website_origin_id
-    compress = true
+    compress         = true
 
     forwarded_values {
       query_string = false
@@ -45,7 +45,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   restrictions {
     geo_restriction {
       restriction_type = "whitelist"
-      locations = ["FR"]
+      locations        = ["FR"]
     }
   }
 

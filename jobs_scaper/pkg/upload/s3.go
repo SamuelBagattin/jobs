@@ -2,12 +2,13 @@ package upload
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	log "github.com/sirupsen/logrus"
 	"jobs_scaper/pkg/env"
-	"log"
 )
 
 func NewS3Client(sess *session.Session) *S3ScrapingClient {
@@ -56,12 +57,16 @@ func (s *S3ScrapingClient) UploadToFileByte(fileName string, content []byte, con
 	}
 
 	if objectExists {
-		log.Printf("%s already exists in bucket %s, deleting", fileName, *s.config.BucketName)
+		log.Info(fmt.Sprintf("%s already exists in bucket %s, deleting", fileName, *s.config.BucketName))
 		_, err := s.s3.DeleteObject(&s3.DeleteObjectInput{
 			Bucket: s.config.BucketName,
 			Key:    &fileName,
 		})
 		if err != nil {
+			log.WithFields(log.Fields{
+				"bucket": s.config.BucketName,
+				"key":    &fileName,
+			}).Error()
 			panic(err)
 		}
 	}
@@ -73,6 +78,14 @@ func (s *S3ScrapingClient) UploadToFileByte(fileName string, content []byte, con
 		ContentType: &contentType,
 	})
 	if err != nil {
+		log.WithFields(log.Fields{
+			"input": s3manager.UploadInput{
+				Bucket:      s.config.BucketName,
+				Key:         aws.String(fileName),
+				Body:        bytes.NewReader(content),
+				ContentType: &contentType,
+			},
+		}).Error("Error while uploading data")
 		panic(err)
 	}
 }

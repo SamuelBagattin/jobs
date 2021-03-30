@@ -1,0 +1,12 @@
+---
+
+- name: Get aggregator project dir
+  shell: echo "$(git rev-parse --show-toplevel)/Jobs.Aggregator/Jobs.Aggregator.Local"
+  register: aggregator_project_dir
+
+- name: "Build and package"
+  shell: cd {{ aggregator_project_dir.stdout }} && ~/.dotnet/tools/dotnet-lambda package
+
+- name: "Deploy to lambda"
+  shell: aws lambda update-function-code --function-name jobs-aggregator-lambda --region eu-west-3 --zip-file fileb://{{aggregator_project_dir.stdout}}/bin/Release/netcoreapp3.1/Jobs.Aggregator.Local.zip
+
