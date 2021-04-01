@@ -114,7 +114,7 @@ func (m *MonsterClient) Scrape() (*[]*JobInfo, error) {
 			break
 		}
 		request.Offset = len(scrapedResults)
-		log.Println("Requesting jobs, offset :" + strconv.Itoa(request.Offset))
+		log.Trace(m.logWithName("Requesting jobs, offset :") + strconv.Itoa(request.Offset))
 		res2, err2 := m.searchJobs(&request)
 		res = res2
 		if err2 != nil {
@@ -132,7 +132,6 @@ func (m *MonsterClient) searchJobs(request *monsterApiSearchJobsRequest) (*monst
 
 	jsonPayload, marshalErr := json.Marshal(request)
 	if marshalErr != nil {
-
 		panic(marshalErr)
 	}
 	payload := bytes.NewReader(jsonPayload)

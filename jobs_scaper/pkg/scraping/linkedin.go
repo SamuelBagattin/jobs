@@ -56,11 +56,12 @@ func (l *LinkedinClient) Scrape() (*[]*JobInfo, error) {
 		i = len(page)
 		log.Debug(l.logWithName(fmt.Sprintf("%v", i)))
 		if i <= 300 {
-			log.Trace(l.logWithName("Visiting next page: " + l.getNextPageUrl(&i)))
-			visitError := c.Visit(l.getNextPageUrl(&i))
-			if visitError != nil {
-				log.Error("Error while visiting: " + l.getNextPageUrl(&i))
-				panic(visitError)
+			retryErr := utils.ExecuteWithRetries(func() error {
+				log.Trace(l.logWithName("Visiting next page: " + l.getNextPageUrl(&i)))
+				return c.Visit(l.getNextPageUrl(&i))
+			}, 3)
+			if retryErr != nil {
+				panic(retryErr)
 			}
 		}
 	})
@@ -87,10 +88,6 @@ func (l *LinkedinClient) Scrape() (*[]*JobInfo, error) {
 			log.Warning(l.logWithName("error description:"), r.StatusCode, err, r.Headers)
 		})
 
-		cDescription.OnResponse(func(r *colly.Response) {
-			log.Println(l.logWithName("response received description"), r.StatusCode)
-		})
-
 		job := JobInfo{
 			Site: l.config.SiteName,
 			Id:   utils.RandStringBytesMaskImprSrcUnsafe(6),
@@ -102,11 +99,14 @@ func (l *LinkedinClient) Scrape() (*[]*JobInfo, error) {
 		})
 
 		element.ForEach("a.result-card__full-card-link", func(i int, element *colly.HTMLElement) {
-			job.Url = strings.TrimSpace(element.Attr("href"))
+			job.Url = sanitizeUrl(strings.TrimSpace(element.Attr("href")))
 			time.Sleep(utils.RandScrapingInterval())
-			errDesc := cDescription.Visit(job.Url)
-			if errDesc != nil {
-				log.Error("Error while visiting description: " + job.Url)
+			err := utils.ExecuteWithRetries(func() error {
+				log.Trace(l.logWithName("Visiting Description: " + job.Url))
+				return cDescription.Visit(job.Url)
+			}, 3)
+			if err != nil {
+				panic(err)
 			}
 		})
 		element.ForEach(".screen-reader-text", func(i int, element *colly.HTMLElement) {
@@ -137,4 +137,13 @@ func (l LinkedinClient) GetConfig() *ClientConfig {
 
 func (l *LinkedinClient) logWithName(msg string) string {
 	return fmt.Sprintf("%s: %s", l.config.SiteName, msg)
+}
+
+func sanitizeUrl(urlString string) string {
+	parsedUrl, err := url.Parse(urlString)
+	if err != nil {
+		panic(err)
+	}
+	parsedUrl.RawQuery = ""
+	return parsedUrl.String()
 }

@@ -6,10 +6,10 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
+	log "github.com/sirupsen/logrus"
 	"jobs_scaper/pkg/env"
 	"jobs_scaper/pkg/scraping"
 	"jobs_scaper/pkg/upload"
-	"log"
 	"sync"
 )
 
@@ -31,6 +31,8 @@ func scrape() {
 			fmt.Println(err)
 		}
 	}()
+	log.SetLevel(log.TraceLevel)
+
 	var scrapingClients []scraping.Client
 
 	var linkedInClient, nLinkedInClientErr = scraping.NewLinkedinClient()
