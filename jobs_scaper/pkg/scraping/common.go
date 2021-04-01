@@ -24,4 +24,5 @@ type ClientConfig struct {
 type Client interface {
 	GetConfig() *ClientConfig
 	Scrape() (*[]*JobInfo, error)
+	logWithName(msg string) string
 }

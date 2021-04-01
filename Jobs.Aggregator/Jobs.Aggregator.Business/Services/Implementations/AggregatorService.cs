@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Jobs.Aggregator.Aws.Configuration;
 using Jobs.Aggregator.Aws.Services.Contracts;
 using Jobs.Aggregator.Core.FinalModels;
 using Jobs.Aggregator.Core.Services.Contracts;
@@ -17,13 +18,17 @@ namespace Jobs.Aggregator.Core.Services.Implementations
         private readonly ILogger<AggregatorService> _logger;
         private readonly IScraperResultsService _scraperResultsService;
         private readonly ITechnologiesService _technologiesService;
+        private readonly IAggregatorResultsService _aggregatorResultsService;
+        private readonly IAwsConfigurationService _awsConfigurationService;
 
         public AggregatorService(
             IScraperResultsService scraperResultsService,
             ITechnologiesService technologiesService,
-            ILogger<AggregatorService> logger
-        )
+            ILogger<AggregatorService> logger, IAggregatorResultsService aggregatorResultsService,
+            IAwsConfigurationService awsConfigurationService)
         {
+            _aggregatorResultsService = aggregatorResultsService;
+            _awsConfigurationService = awsConfigurationService;
             (_scraperResultsService, _technologiesService, _logger) =
                 (scraperResultsService, technologiesService, logger);
         }
@@ -111,7 +116,7 @@ namespace Jobs.Aggregator.Core.Services.Implementations
                         Jobs = e.Jobs.Select(job => new FinalJob
                         {
                             JobTitle = job.Value.Title,
-                            Id = e.Id,
+                            Id = job.Value.Id,
                             MainTechnologies =
                                 job.Value.MainTechnologies.Select(_technologiesService.GetTechnologyName),
                             SecondaryTechnologies =
@@ -152,8 +157,18 @@ namespace Jobs.Aggregator.Core.Services.Implementations
                     })
                 }
             };
-            File.Create("../../../../index.json").Close();
-            await File.WriteAllTextAsync("../../../../index.json", JsonSerializer.Serialize(res2));
+            if (_awsConfigurationService.WriteResultsToLocal)
+            {
+                File.Create("../../../../index.json").Close();
+                await File.WriteAllTextAsync("../../../../index.json", JsonSerializer.Serialize(res2));
+            }
+
+            if (_awsConfigurationService.UploadResults)
+            {
+                await _aggregatorResultsService.UploadAggregatedJobs(res2);
+            }
+
+            ;
         }
     }
 }

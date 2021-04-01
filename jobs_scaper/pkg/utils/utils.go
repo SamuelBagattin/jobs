@@ -1,6 +1,7 @@
 package utils
 
 import (
+	log "github.com/sirupsen/logrus"
 	"math/rand"
 	"time"
 	"unsafe"
@@ -38,4 +39,18 @@ func RandStringBytesMaskImprSrcUnsafe(n int) string {
 func RandScrapingInterval() time.Duration {
 	i := int(rand.Float32()*1000 + 1000)
 	return time.Millisecond * time.Duration(i)
+}
+
+func ExecuteWithRetries(executor func() error, retries int) error {
+	actualRetries := 0
+	for err := executor(); err != nil; {
+		if actualRetries == retries {
+			log.Error("Retries count exceeded")
+			return err
+		}
+		actualRetries++
+		time.Sleep(RandScrapingInterval())
+		log.Debug("Retrying...")
+	}
+	return nil
 }

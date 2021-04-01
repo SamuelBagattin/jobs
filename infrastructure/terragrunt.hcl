@@ -1,10 +1,10 @@
 remote_state {
   backend = "s3"
   config = {
-    bucket = "jobs-scraper-terraform-state"
-    key            = "${path_relative_to_include()}/terraform.tfstate"
-    region         = "us-east-1"
-    encrypt        = true
-    dynamodb_table = "jobs-scraper-terraform-lock"
+    bucket = "jobs-scraper-terraform-state-paris"
+    key = "${path_relative_to_include()}/terraform.tfstate"
+    region = "eu-west-3"
+    encrypt = true
+    dynamodb_table = "jobs-scraper-terraform-lock-paris"
   }
 }

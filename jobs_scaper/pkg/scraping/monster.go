@@ -3,10 +3,11 @@ package scraping
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"jobs_scaper/pkg/utils"
-	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -53,6 +54,7 @@ type monsterApiSearchJobsResponse struct {
 }
 
 func NewMonsterClient() (*MonsterClient, error) {
+	log.Trace("Initiating monster client")
 	var baseUrl, err = url.Parse("https://www.monster.fr")
 	if err != nil {
 		return nil, err
@@ -90,9 +92,10 @@ func (m *MonsterClient) Scrape() (*[]*JobInfo, error) {
 		PageSize: 100,
 	}
 
-	log.Println("Requesting jobs, offset :" + strconv.Itoa(request.Offset))
+	log.Trace(m.logWithName("Requesting jobs, offset :" + strconv.Itoa(request.Offset)))
 	res, err := m.searchJobs(&request)
 	if err != nil {
+		log.WithField("request", request).Error("Error while searching jobs")
 		panic(err)
 	}
 	for {
@@ -107,15 +110,15 @@ func (m *MonsterClient) Scrape() (*[]*JobInfo, error) {
 				Description: el.JobPosting.Description,
 			})
 		}
-		log.Printf("%v, %v", len(res.JobResults), res.EstimatedTotalSize)
 		if res.EstimatedTotalSize <= len(scrapedResults) {
 			break
 		}
 		request.Offset = len(scrapedResults)
-		log.Println("Requesting jobs, offset :" + strconv.Itoa(request.Offset))
+		log.Trace(m.logWithName("Requesting jobs, offset :") + strconv.Itoa(request.Offset))
 		res2, err2 := m.searchJobs(&request)
 		res = res2
 		if err2 != nil {
+			log.WithField("request", request).Error("Error while searching jobs")
 			panic(err2)
 		}
 	}
@@ -137,6 +140,11 @@ func (m *MonsterClient) searchJobs(request *monsterApiSearchJobsRequest) (*monst
 	req, err := http.NewRequest(method, *apiUrl, payload)
 
 	if err != nil {
+		log.WithFields(log.Fields{
+			"payload": *payload,
+			"method":  method,
+			"url":     *apiUrl,
+		}).Error(m.logWithName("Error while creating request"))
 		panic(err)
 	}
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0")
@@ -150,23 +158,29 @@ func (m *MonsterClient) searchJobs(request *monsterApiSearchJobsRequest) (*monst
 
 	res, err := client.Do(req)
 	if err != nil {
+		log.WithFields(log.Fields{
+			"request": req,
+		}).Error(m.logWithName("Error while requesting api"))
 		panic(err)
 	}
 	defer func() {
 		err = res.Body.Close()
 		if err != nil {
+			log.WithField("body", *res).Error(m.logWithName("Error while closing the request body"))
 			panic(err)
 		}
 	}()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
+		log.WithField("body", res.Body).Error(m.logWithName("Error while reading body"))
 		panic(err)
 	}
 
 	var result monsterApiSearchJobsResponse
 	unmarshalErr := json.Unmarshal(body, &result)
 	if unmarshalErr != nil {
+		log.WithField("body", string(body)).Error(m.logWithName("Cannot unmarshal body"))
 		panic(unmarshalErr)
 	}
 
@@ -176,4 +190,8 @@ func (m *MonsterClient) searchJobs(request *monsterApiSearchJobsRequest) (*monst
 
 	return &result, nil
 
+}
+
+func (m *MonsterClient) logWithName(msg string) string {
+	return fmt.Sprintf("%s: %s", m.config.SiteName, msg)
 }

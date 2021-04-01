@@ -4,6 +4,9 @@
   command: echo "$(git rev-parse --show-toplevel)/frontend"
   register: frontend_dir
 
+- name: "Restore dependencies"
+  shell: yarn --cwd "{{frontend_dir.stdout}}"
+
 - name: "Build frontend"
   shell: yarn --cwd "{{frontend_dir.stdout}}" build --prod
 
