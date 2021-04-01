@@ -16,6 +16,10 @@ resource "aws_lambda_function" "scraper" {
     }
   }
 
+  tracing_config {
+    mode = "Active"
+  }
+
   tags = {
     Project : local.project_name
     Name : local.scraper_lambda_name

@@ -16,6 +16,10 @@ resource "aws_lambda_function" "aggregator" {
     }
   }
 
+  tracing_config {
+    mode = "Active"
+  }
+
   tags = {
     Project : local.project_name
     Name : local.aggregator_lambda_name

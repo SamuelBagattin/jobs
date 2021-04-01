@@ -3,6 +3,7 @@ package scraping
 import (
 	"fmt"
 	"github.com/gocolly/colly/v2"
+	"github.com/gocolly/colly/v2/extensions"
 	log "github.com/sirupsen/logrus"
 	"jobs_scaper/pkg/utils"
 	"net/url"
@@ -72,20 +73,23 @@ func (l *LinkedinClient) Scrape() (*[]*JobInfo, error) {
 		cDescription := c.Clone()
 		cDescription.OnRequest(func(req *colly.Request) {
 			req.Headers.Add("authority", "fr.linkedin.com")
-			req.Headers.Add("cache-control", "max-age=0")
+			req.Headers.Add("pragma", "no-cache")
+			req.Headers.Add("cache-control", "no-cache")
 			req.Headers.Add("upgrade-insecure-requests", "1")
+			//req.Headers.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.105 Safari/537.36")
 			req.Headers.Add("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9")
 			req.Headers.Add("sec-gpc", "1")
-			req.Headers.Add("sec-fetch-site", "same-site")
+			req.Headers.Add("sec-fetch-site", "none")
 			req.Headers.Add("sec-fetch-mode", "navigate")
 			req.Headers.Add("sec-fetch-user", "?1")
 			req.Headers.Add("sec-fetch-dest", "document")
-			req.Headers.Add("referer", "https://www.linkedin.com/")
-			req.Headers.Add("accept-language", "en-US,en;q=0.9")
+			req.Headers.Add("accept-language", "fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5")
 		})
 
 		cDescription.OnError(func(r *colly.Response, err error) {
-			log.Warning(l.logWithName("error description:"), r.StatusCode, err, r.Headers)
+			log.WithFields(log.Fields{
+				"statusCode": r.StatusCode,
+			}).Warning(l.logWithName("Error while fetching description"), r.StatusCode, err)
 		})
 
 		job := JobInfo{
@@ -99,11 +103,13 @@ func (l *LinkedinClient) Scrape() (*[]*JobInfo, error) {
 		})
 
 		element.ForEach("a.result-card__full-card-link", func(i int, element *colly.HTMLElement) {
-			job.Url = sanitizeUrl(strings.TrimSpace(element.Attr("href")))
+			var fullUrl = strings.TrimSpace(element.Attr("href"))
+			job.Url = sanitizeUrl(fullUrl)
 			time.Sleep(utils.RandScrapingInterval())
 			err := utils.ExecuteWithRetries(func() error {
-				log.Trace(l.logWithName("Visiting Description: " + job.Url))
-				return cDescription.Visit(job.Url)
+				log.Trace(l.logWithName("Visiting Description: " + fullUrl))
+				extensions.RandomUserAgent(c)
+				return cDescription.Visit(fullUrl)
 			}, 3)
 			if err != nil {
 				panic(err)
@@ -132,7 +138,8 @@ func (l *LinkedinClient) getNextPageUrl(resultsCount *int) string {
 }
 
 func (l LinkedinClient) GetConfig() *ClientConfig {
-	return l.config
+	var conf = *l.config
+	return &conf
 }
 
 func (l *LinkedinClient) logWithName(msg string) string {

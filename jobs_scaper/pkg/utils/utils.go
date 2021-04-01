@@ -50,6 +50,7 @@ func ExecuteWithRetries(executor func() error, retries int) error {
 		}
 		actualRetries++
 		time.Sleep(RandScrapingInterval())
+		log.Debug("Retrying...")
 	}
 	return nil
 }
