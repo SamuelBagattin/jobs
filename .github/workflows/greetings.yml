@@ -42,6 +42,6 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         shell: powershell
         run: |
-          .\.sonar\scanner\dotnet-sonarscanner begin /k:"SamuelBagattin_jobs" /o:"samuelbagattin" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
-          dotnet build .\Jobs.Aggregator\Jobs.Aggregator.Local\Jobs.Aggregator.Local.csproj \d:sonar.sources="frontend,jobs_scraper"
+          .\.sonar\scanner\dotnet-sonarscanner begin /k:"SamuelBagattin_jobs" /o:"samuelbagattin" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.sources="frontend,jobs_scraper"
+          dotnet build .\Jobs.Aggregator\Jobs.Aggregator.Local\Jobs.Aggregator.Local.csproj
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
