@@ -1,34 +1,4 @@
 ////
-// Lambda
-////
-resource "aws_lambda_function" "scraper" {
-  function_name = local.scraper_lambda_name
-  handler       = "main"
-  role          = aws_iam_role.lambda_scraper.arn
-  runtime       = "go1.x"
-  filename      = "main.zip"
-  timeout       = 900
-
-  environment {
-    variables = {
-      ON_LAMBDA : true
-      RESULTS_BUCKET_NAME : aws_s3_bucket.scraper_results.bucket
-    }
-  }
-
-  tracing_config {
-    mode = "Active"
-  }
-
-  tags = {
-    Project : local.project_name
-    Name : local.scraper_lambda_name
-  }
-
-}
-
-
-////
 // Bucket
 ////
 resource "aws_s3_bucket" "scraper_results" {
@@ -54,27 +24,19 @@ resource "aws_cloudwatch_event_rule" "scraper_trigger" {
 }
 
 resource "aws_cloudwatch_event_target" "scraper_target" {
-  target_id = "${aws_lambda_function.scraper.function_name}-target"
-  arn       = aws_lambda_function.scraper.arn
+  target_id = "${aws_iam_user.scraper.name}-target"
+  arn       = aws_sqs_queue.scraper_trigger.arn
   rule      = aws_cloudwatch_event_rule.scraper_trigger.name
-
 }
 
-resource "aws_lambda_permission" "eventbridge_to_scraper_lambda" {
-  function_name = aws_lambda_function.scraper.function_name
-  statement_id  = "AllowExecutionFromCloudWatch"
-  action        = "lambda:InvokeFunction"
-  principal     = "events.amazonaws.com"
-  source_arn    = aws_cloudwatch_event_rule.scraper_trigger.arn
 
-}
 
 
 ////
 // IAM
 ////
 
-resource "aws_iam_role" "lambda_scraper" {
+resource "aws_iam_role" "scraper" {
   name               = local.scraper_iam_role_name
   assume_role_policy = data.aws_iam_policy_document.scraper_assume_role.json
   tags = {
@@ -86,26 +48,22 @@ resource "aws_iam_role" "lambda_scraper" {
 resource "aws_iam_policy_attachment" "scraper_attachment_to_basicrole" {
   name       = "${local.scraper_policy_attachment}_to_basicexecutionrole"
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-  roles = [
-  aws_iam_role.lambda_scraper.name]
+  roles      = [aws_iam_role.scraper.name]
 }
 
 resource "aws_iam_policy_attachment" "scraper_attachment" {
   name       = local.scraper_policy_attachment
   policy_arn = aws_iam_policy.scraper_policy.arn
-  roles = [
-  aws_iam_role.lambda_scraper.name]
+  roles      = [aws_iam_role.scraper.name]
 }
 
 data "aws_iam_policy_document" "scraper_assume_role" {
   version = "2012-10-17"
   statement {
-    actions = [
-    "sts:AssumeRole"]
+    actions = ["sts:AssumeRole"]
     principals {
-      identifiers = [
-      "lambda.amazonaws.com"]
-      type = "Service"
+      identifiers = [aws_iam_user.scraper.arn, data.aws_caller_identity.identity.arn]
+      type        = "AWS"
     }
     effect = "Allow"
     sid    = ""
@@ -123,16 +81,35 @@ data "aws_iam_policy_document" "scraper_policy" {
     actions = [
       "s3:GetObject",
       "s3:PutObject",
-    "s3:DeleteObject"]
-    effect = "Allow"
-    resources = [
-    "${aws_s3_bucket.scraper_results.arn}/*"]
+      "s3:DeleteObject"
+    ]
+    effect    = "Allow"
+    resources = ["${aws_s3_bucket.scraper_results.arn}/*"]
   }
   statement {
-    actions = [
-    "s3:ListBucket"]
-    effect = "Allow"
-    resources = [
-    aws_s3_bucket.scraper_results.arn]
+    actions   = ["s3:ListBucket"]
+    effect    = "Allow"
+    resources = [aws_s3_bucket.scraper_results.arn]
   }
+  statement {
+    actions   = ["ssm:GetParameter"]
+    effect    = "Allow"
+    resources = [aws_ssm_parameter.scraping_queries.arn]
+  }
+  statement {
+    actions   = ["sqs:ReceiveMessage", "sqs:DeleteMessage", "sqs:GetQueueAttributes"]
+    effect    = "Allow"
+    resources = [aws_sqs_queue.scraper_trigger.arn]
+  }
+  statement {
+    actions   = ["lambda:InvokeAsync"]
+    effect    = "Allow"
+    resources = [aws_lambda_function.aggregator.arn]
+  }
+}
+
+
+// On Prem scraper
+resource "aws_iam_user" "scraper" {
+  name = local.scraper_user_name
 }

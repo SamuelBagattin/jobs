@@ -32,6 +32,7 @@ namespace Jobs.Aggregator.Local
                         .AddTransient<IS3Service, S3Service>()
                         .AddTransient<ICloudfrontService, CloudfrontService>()
                         .AddTransient<IAwsConfigurationService, AwsConfigurationService>()
+                        .AddTransient<ITechnologiesAggregatorService, TechnologiesAggregatorService>()
                         .AddAWSService<IAmazonS3>()
                         .AddAWSService<IAmazonCloudFront>()
                 );

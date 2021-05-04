@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Jobs.Aggregator.Core.TransitionModels;
 
 namespace Jobs.Aggregator.Core.Services.Contracts
 {
@@ -8,5 +9,6 @@ namespace Jobs.Aggregator.Core.Services.Contracts
         IEnumerable<TechnologiesEnum> GetTechnologies(IEnumerable<string> jobContents);
         string GetTechnologyName(TechnologiesEnum enumMember);
         IEnumerable<TechnologiesEnum> GetAllTechnologies();
+        bool isItJob(JobByTechnoWithCompany job);
     }
 }
