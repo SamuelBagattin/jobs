@@ -1,9 +1,7 @@
 package env
 
 import (
-	"errors"
-	"fmt"
-	"os"
+	"github.com/aws/aws-sdk-go/aws"
 )
 
 const (
@@ -11,9 +9,5 @@ const (
 )
 
 func GetUploadBucketName() *string {
-	bucketNameEnvVar := os.Getenv(ResultsBucketEnvVarName)
-	if bucketNameEnvVar != "" {
-		return &bucketNameEnvVar
-	}
-	panic(errors.New(fmt.Sprintf("Missing Env Var: %s", ResultsBucketEnvVarName)))
+	return getEnvVar(aws.String(ResultsBucketEnvVarName))
 }

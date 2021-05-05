@@ -32,7 +32,7 @@ namespace Jobs.Aggregator.Aws.Services.Implementations
                 return JsonSerializer.Deserialize<Job[]>(jsonData);
             });
             var truc = await Task.WhenAll(test);
-            return truc.SelectMany(e => e);
+            return truc.Where(e => e != null).SelectMany(e => e);
         }
     }
 }

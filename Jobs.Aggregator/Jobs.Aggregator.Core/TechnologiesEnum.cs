@@ -33,6 +33,8 @@ namespace Jobs.Aggregator.Core
         Jenkins,
         Teamcity,
         Symfony,
-        Laravel
+        Laravel,
+        ChefDeProjet,
+        Alternance
     }
 }

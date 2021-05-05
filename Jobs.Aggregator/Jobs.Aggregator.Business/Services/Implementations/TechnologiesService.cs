@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Jobs.Aggregator.Core.Models;
 using Jobs.Aggregator.Core.Services.Contracts;
+using Jobs.Aggregator.Core.TransitionModels;
 
 namespace Jobs.Aggregator.Core.Services.Implementations
 {
@@ -28,7 +29,7 @@ namespace Jobs.Aggregator.Core.Services.Implementations
                 },
                 {
                     TechnologiesEnum.Vuejs,
-                    new TechnologyData {Regex = new Regex(@" vue |vuejs", Options), DisplayName = "Vue"}
+                    new TechnologyData {Regex = new Regex(@"vue ?js", Options), DisplayName = "Vue"}
                 },
                 {
                     TechnologiesEnum.React,
@@ -52,7 +53,6 @@ namespace Jobs.Aggregator.Core.Services.Implementations
                     new TechnologyData {Regex = new Regex(@"laravel", Options), DisplayName = "Laravel"}
                 },
                 {TechnologiesEnum.Cpp, new TechnologyData {Regex = new Regex(@"c\+\+", Options), DisplayName = "C++"}},
-                {TechnologiesEnum.C, new TechnologyData {Regex = new Regex(@" c ", Options), DisplayName = "C"}},
                 {
                     TechnologiesEnum.Devops,
                     new TechnologyData {Regex = new Regex(@"devops", Options), DisplayName = "DevOps"}
@@ -130,6 +130,14 @@ namespace Jobs.Aggregator.Core.Services.Implementations
                 {
                     TechnologiesEnum.Teamcity,
                     new TechnologyData {Regex = new Regex(@"teamcity", Options), DisplayName = "Teamcity"}
+                },
+                {
+                    TechnologiesEnum.ChefDeProjet,
+                    new TechnologyData {Regex = new Regex(@"chef|responsable", Options), DisplayName = "Chef de projet"}
+                },
+                {
+                    TechnologiesEnum.Alternance,
+                    new TechnologyData {Regex = new Regex(@"alternan", Options), DisplayName = "Alternance"}
                 }
             };
 
@@ -154,6 +162,12 @@ namespace Jobs.Aggregator.Core.Services.Implementations
         public IEnumerable<TechnologiesEnum> GetAllTechnologies()
         {
             return TechnosData.Select(e => e.Key);
+        }
+
+        public bool isItJob(JobByTechnoWithCompany job)
+        {
+            return job.MainTechnologies.Any(e => e != TechnologiesEnum.ChefDeProjet && e != TechnologiesEnum.Alternance) |
+                   job.SecondaryTechnologies.Any(e => e != TechnologiesEnum.ChefDeProjet && e != TechnologiesEnum.Alternance);
         }
     }
 }

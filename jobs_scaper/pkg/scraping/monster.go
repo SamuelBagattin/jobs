@@ -10,7 +10,6 @@ import (
 	"jobs_scaper/pkg/utils"
 	"net/http"
 	"net/url"
-	"strconv"
 	"time"
 )
 
@@ -78,7 +77,7 @@ func (m *MonsterClient) GetConfig() *ClientConfig {
 	return m.config
 }
 
-func (m *MonsterClient) Scrape() (*[]*JobInfo, error) {
+func (m *MonsterClient) Scrape(query string) (*[]*JobInfo, error) {
 	var scrapedResults []*JobInfo
 
 	request := monsterApiSearchJobsRequest{
@@ -86,13 +85,13 @@ func (m *MonsterClient) Scrape() (*[]*JobInfo, error) {
 			Locations: []monsterApiSearchJobsLocation{
 				{Address: "bordeaux", Country: "fr"},
 			},
-			Query: "developpeur",
+			Query: query,
 		},
 		Offset:   0,
 		PageSize: 100,
 	}
 
-	log.Trace(m.logWithName("Requesting jobs, offset :" + strconv.Itoa(request.Offset)))
+	//log.Trace(m.logWithName("Requesting jobs, offset :" + strconv.Itoa(request.Offset)))
 	res, err := m.searchJobs(&request)
 	if err != nil {
 		log.WithField("request", request).Error("Error while searching jobs")
@@ -110,11 +109,11 @@ func (m *MonsterClient) Scrape() (*[]*JobInfo, error) {
 				Description: el.JobPosting.Description,
 			})
 		}
-		if res.EstimatedTotalSize <= len(scrapedResults) {
+		if res.EstimatedTotalSize <= len(scrapedResults) || len(scrapedResults) > 500 {
 			break
 		}
 		request.Offset = len(scrapedResults)
-		log.Trace(m.logWithName("Requesting jobs, offset :") + strconv.Itoa(request.Offset))
+		//log.Trace(m.logWithName("Requesting jobs, offset :") + strconv.Itoa(request.Offset))
 		res2, err2 := m.searchJobs(&request)
 		res = res2
 		if err2 != nil {

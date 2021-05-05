@@ -4,7 +4,7 @@ resource "aws_lambda_function" "aggregator" {
   role          = aws_iam_role.aggregator_lambda.arn
   runtime       = "dotnetcore3.1"
   filename      = "Jobs.Aggregator.Local.zip"
-  timeout       = 30
+  timeout       = 90
   memory_size   = 512
 
   environment {

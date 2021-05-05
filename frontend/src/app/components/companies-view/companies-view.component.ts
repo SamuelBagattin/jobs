@@ -31,11 +31,32 @@ export class CompaniesViewComponent implements OnInit {
 
   ngOnInit(): void {
     this.filteredCompaniesSubject.next(this.data.Companies.Companies);
-    this.technosFormControl.valueChanges.pipe(distinctUntilChanged(), debounceTime(200)).subscribe(e => {
+    this.technosFormControl.valueChanges.pipe(distinctUntilChanged()).subscribe(e => {
       if (e === "Any") {
         this.filteredCompaniesSubject.next(this.data.Companies.Companies)
       } else {
-        this.filteredCompaniesSubject.next(this.data.Technologies.Technologies.find(techno => techno.TechnologyName == e).CompaniesWithMainTechnologies.Ids.map(companyId => this.data.Companies.Companies.find(f => f.Id === companyId)))
+        const techno = this.data.Technologies.Technologies.find(
+          techno => techno.TechnologyName == e
+        );
+        const filtreredCompanies = techno.CompaniesWithMainTechnologies.Ids.map(
+          companyId => this.data.Companies.Companies.find(f => f.Id === companyId));
+
+        const filteredCompaniesWithJobs = filtreredCompanies.map(e => {
+            const company = Object.assign({}, e);
+            company.Jobs = techno.JobsWithMainTechnology.Ids.filter(
+              x => e.Jobs.map(y => y.Id).includes(x)
+            ).map(
+              id => {
+                return e.Jobs.find(s => s.Id === id)
+              }
+            );
+            return company
+          }
+        )
+
+        this.filteredCompaniesSubject.next(
+          filteredCompaniesWithJobs
+        )
       }
     })
   }

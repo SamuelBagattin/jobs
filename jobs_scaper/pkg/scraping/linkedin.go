@@ -2,6 +2,7 @@ package scraping
 
 import (
 	"fmt"
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/gocolly/colly/v2"
 	"github.com/gocolly/colly/v2/extensions"
 	log "github.com/sirupsen/logrus"
@@ -24,6 +25,7 @@ func NewLinkedinClient() (*LinkedinClient, error) {
 			SiteBasePath: baseUrl,
 			SiteOrigin:   baseUrl.Host,
 		},
+		maxResults: aws.Int(200),
 	}, nil
 }
 
@@ -32,13 +34,12 @@ type LinkedinClient struct {
 	maxResults *int
 }
 
-func (l *LinkedinClient) Scrape() (*[]*JobInfo, error) {
+func (l *LinkedinClient) Scrape(query string) (*[]*JobInfo, error) {
 	log.Trace(l.logWithName("Start scraping"))
 	var i = 0
-	var visitUrl = l.getNextPageUrl(&i)
-	c := colly.NewCollector(
-		colly.UserAgent("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.101 Safari/537.36"),
-	)
+	var visitUrl = l.getNextPageUrl(&i, query)
+	c := colly.NewCollector()
+	extensions.RandomUserAgent(c)
 
 	c.OnRequest(func(req *colly.Request) {
 		req.Headers.Add("authority", "www.linkedin.com")
@@ -52,17 +53,22 @@ func (l *LinkedinClient) Scrape() (*[]*JobInfo, error) {
 	})
 
 	var page []*JobInfo
+	var cookie = ""
+
+	c.OnResponseHeaders(func(response *colly.Response) {
+		cookie = response.Headers.Get("set-cookie")
+	})
 
 	c.OnScraped(func(response *colly.Response) {
 		i = len(page)
 		log.Debug(l.logWithName(fmt.Sprintf("%v", i)))
-		if i <= 300 {
+		if i <= *l.maxResults {
 			retryErr := utils.ExecuteWithRetries(func() error {
-				log.Trace(l.logWithName("Visiting next page: " + l.getNextPageUrl(&i)))
-				return c.Visit(l.getNextPageUrl(&i))
+				log.Trace(l.logWithName("Visiting next page: " + l.getNextPageUrl(&i, query)))
+				return c.Visit(l.getNextPageUrl(&i, query))
 			}, 3)
 			if retryErr != nil {
-				panic(retryErr)
+				log.Warning(l.logWithName("Error while fetching next page"))
 			}
 		}
 	})
@@ -70,13 +76,19 @@ func (l *LinkedinClient) Scrape() (*[]*JobInfo, error) {
 		log.Println(l.logWithName("Error while visiting: "), r.Request.URL.String(), r.StatusCode, err, string(r.Body))
 	})
 	c.OnHTML(".result-card.job-result-card.result-card--with-hover-state", func(element *colly.HTMLElement) {
-		cDescription := c.Clone()
+		job := JobInfo{
+			Site: l.config.SiteName,
+			Id:   utils.RandStringBytesMaskImprSrcUnsafe(6),
+			Date: time.Now(),
+		}
+
+		cDescription := colly.NewCollector()
+		extensions.RandomUserAgent(cDescription)
 		cDescription.OnRequest(func(req *colly.Request) {
 			req.Headers.Add("authority", "fr.linkedin.com")
 			req.Headers.Add("pragma", "no-cache")
 			req.Headers.Add("cache-control", "no-cache")
 			req.Headers.Add("upgrade-insecure-requests", "1")
-			//req.Headers.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.105 Safari/537.36")
 			req.Headers.Add("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9")
 			req.Headers.Add("sec-gpc", "1")
 			req.Headers.Add("sec-fetch-site", "none")
@@ -91,29 +103,26 @@ func (l *LinkedinClient) Scrape() (*[]*JobInfo, error) {
 				"statusCode": r.StatusCode,
 			}).Warning(l.logWithName("Error while fetching description"), r.StatusCode, err)
 		})
-
-		job := JobInfo{
-			Site: l.config.SiteName,
-			Id:   utils.RandStringBytesMaskImprSrcUnsafe(6),
-			Date: time.Now(),
-		}
-
 		cDescription.OnHTML(".show-more-less-html__markup", func(desc *colly.HTMLElement) {
 			job.Description = strings.TrimSpace(desc.Text)
 		})
 
 		element.ForEach("a.result-card__full-card-link", func(i int, element *colly.HTMLElement) {
 			var fullUrl = strings.TrimSpace(element.Attr("href"))
-			job.Url = sanitizeUrl(fullUrl)
 			time.Sleep(utils.RandScrapingInterval())
 			err := utils.ExecuteWithRetries(func() error {
-				log.Trace(l.logWithName("Visiting Description: " + fullUrl))
+				//log.Trace(l.logWithName("Visiting Description: " + fullUrl))
 				extensions.RandomUserAgent(c)
 				return cDescription.Visit(fullUrl)
 			}, 3)
 			if err != nil {
-				panic(err)
+				log.Warn(l.logWithName(err.Error()))
 			}
+		})
+
+		element.ForEach("a.result-card__full-card-link", func(i int, element *colly.HTMLElement) {
+			var fullUrl = strings.TrimSpace(element.Attr("href"))
+			job.Url = sanitizeUrl(fullUrl)
 		})
 		element.ForEach(".screen-reader-text", func(i int, element *colly.HTMLElement) {
 			job.Title = strings.TrimSpace(element.Text)
@@ -133,8 +142,9 @@ func (l *LinkedinClient) Scrape() (*[]*JobInfo, error) {
 
 }
 
-func (l *LinkedinClient) getNextPageUrl(resultsCount *int) string {
-	return "https://fr.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=developpeur&location=Bordeaux%2C%20Nouvelle-Aquitaine%2C%20France&geoId=&trk=homepage-jobseeker_jobs-search-bar_search-submit&redirect=false&position=0&pageNum=0&start=" + strconv.Itoa(*resultsCount)
+func (l *LinkedinClient) getNextPageUrl(resultsCount *int, query string) string {
+
+	return "https://fr.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=" + url.QueryEscape(query) + "&location=Bordeaux&geoId=&trk=homepage-jobseeker_jobs-search-bar_search-submit&position=1&pageNum=0&start=" + strconv.Itoa(*resultsCount)
 }
 
 func (l LinkedinClient) GetConfig() *ClientConfig {
