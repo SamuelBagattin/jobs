@@ -26,3 +26,7 @@ type Client interface {
 	Scrape(query string) (*[]*JobInfo, error)
 	logWithName(msg string) string
 }
+
+type FinalScrapingResult struct {
+	QueriesStatistics map[string]*int `json:"queries_statistics"`
+}

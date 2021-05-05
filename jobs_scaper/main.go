@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/sns"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/aws/aws-sdk-go/service/ssm"
 	log "github.com/sirupsen/logrus"
@@ -24,6 +25,9 @@ func main() {
 	sess := initSession()
 	ssmClient := ssm.New(sess)
 	sqsClient := sqs.New(sess)
+	snsClient := sns.New(sess)
+
+	s3ScrapingClient := upload.NewS3Client(sess)
 
 	for {
 		var sqsQueueUrl = env.GetSqsQueueUrl()
@@ -43,7 +47,7 @@ func main() {
 		for _, m := range message.Messages {
 			fmt.Printf("%v", m)
 
-			scrape(ssmClient, sess)
+			scrapingRes := scrape(ssmClient, s3ScrapingClient)
 
 			deleteMessage, err := sqsClient.DeleteMessage(&sqs.DeleteMessageInput{
 				QueueUrl:      sqsQueueUrl,
@@ -53,11 +57,16 @@ func main() {
 				panic(err)
 			}
 			fmt.Printf("%v", deleteMessage)
+
+			postScrapingErr := postScraping(scrapingRes, snsClient)
+			if postScrapingErr != nil {
+				return
+			}
 		}
 	}
 }
 
-func scrape(ssmClient *ssm.SSM, sess *session.Session) {
+func scrape(ssmClient *ssm.SSM, s3ScrapClient *upload.S3ScrapingClient) *scraping.FinalScrapingResult {
 	log.Debug("Getting jobs-scraping-queries parameter")
 	param, err := ssmClient.GetParameter(&ssm.GetParameterInput{
 		Name: aws.String("jobs-scraping-queries"),
@@ -72,9 +81,9 @@ func scrape(ssmClient *ssm.SSM, sess *session.Session) {
 	}
 	var queriesSummary = make(map[string]*int)
 	for _, query := range queries {
-		queriesSummary[query] = scrapeQuery(query, sess)
-		log.Infof("%v", queriesSummary)
+		queriesSummary[query] = scrapeQuery(query, s3ScrapClient)
 	}
+	return &scraping.FinalScrapingResult{QueriesStatistics: queriesSummary}
 }
 
 func initSession() *session.Session {
@@ -92,7 +101,7 @@ func initSession() *session.Session {
 	}))
 }
 
-func scrapeQuery(query string, sess *session.Session) *int {
+func scrapeQuery(query string, s3ScrapClient *upload.S3ScrapingClient) *int {
 	defer func() {
 		if err := recover(); err != nil {
 			fmt.Println(err)
@@ -115,8 +124,6 @@ func scrapeQuery(query string, sess *session.Session) *int {
 	}
 
 	scrapingClients = append(scrapingClients, monsterClient)
-
-	var s3ScrapClient = upload.NewS3Client(sess)
 
 	var wg sync.WaitGroup
 	var jobsCount = 0
@@ -141,4 +148,19 @@ func scrapeQuery(query string, sess *session.Session) *int {
 	}
 	wg.Wait()
 	return &jobsCount
+}
+
+func postScraping(queriesSummary *scraping.FinalScrapingResult, snsClient *sns.SNS) error {
+	stringMessage, errMarshal := json.Marshal(queriesSummary)
+	if errMarshal != nil {
+		return errMarshal
+	}
+	_, err := snsClient.Publish(&sns.PublishInput{
+		Message:  aws.String(string(stringMessage)),
+		TopicArn: env.GetSnsTopicDestinationArn(),
+	})
+	if err != nil {
+		return err
+	}
+	return nil
 }

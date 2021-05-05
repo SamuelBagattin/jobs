@@ -77,10 +77,20 @@ data "aws_iam_policy_document" "aggregator_policy" {
     resources = [aws_s3_bucket.scraper_results.arn]
   }
   statement {
+    actions   = ["sqs:ReceiveMessage", "sqs:DeleteMessage", "sqs:GetQueueAttributes"]
+    effect    = "Allow"
+    resources = [aws_sqs_queue.aggregator_trigger.arn]
+  }
+  statement {
     actions   = ["cloudfront:CreateInvalidation"]
     effect    = "Allow"
     resources = [aws_cloudfront_distribution.s3_distribution.arn]
   }
+}
+
+resource "aws_lambda_event_source_mapping" "aggregator_sqs_trigger" {
+  event_source_arn = aws_sqs_queue.aggregator_trigger.arn
+  function_name    = aws_lambda_function.aggregator.arn
 }
 
 
