@@ -1,5 +1,11 @@
 ---
 
+- name: Install dotnet
+  shell: dotnet --version || (wget https://dot.net/v1/dotnet-install.sh && chmod +x ./dotnet-install.sh && ./dotnet-install.sh && PATH=$PATH:~/.dotnet/dotnet)
+
+- name: Install gitversion
+  shell: dotnet tool update --global GitVersion.Tool --version 5.6.9
+
 - name: Get scraper_dir
   shell: echo "$(git rev-parse --show-toplevel)/jobs_scaper"
   register: scraper_dir
