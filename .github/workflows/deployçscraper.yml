@@ -18,3 +18,7 @@ jobs:
       with:
         playbook: playbooks/deploy_scraper.yml
         directory: ./
+    - uses: actions/upload-artifact@v2
+      with:
+        name: scraper
+        path: jobs_scaper/scraper
