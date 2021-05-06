@@ -48,7 +48,7 @@ func (l *LinkedinClient) Scrape(query string) (*[]*JobInfo, error) {
 		req.Headers.Add("sec-fetch-site", "same-origin")
 		req.Headers.Add("sec-fetch-mode", "cors")
 		req.Headers.Add("sec-fetch-dest", "empty")
-		req.Headers.Add("referer", "https://www.linkedin.com/jobs/search?keywords=developpeur&location=Bordeaux%2C%20Nouvelle-Aquitaine%2C%20France&geoId=&trk=homepage-jobseeker_jobs-search-bar_search-submit&redirect=false&position=1&pageNum=0")
+		req.Headers.Add("referer", "https://www.linkedin.com/jobs/search?keywords=developpeur&location=Gironde%2C%20Nouvelle-Aquitaine%2C%20France&geoId=&trk=homepage-jobseeker_jobs-search-bar_search-submit&redirect=false&position=1&pageNum=0")
 		req.Headers.Add("accept-language", "en-US,en;q=0.9")
 	})
 
