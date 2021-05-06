@@ -83,7 +83,7 @@ func (m *MonsterClient) Scrape(query string) (*[]*JobInfo, error) {
 	request := monsterApiSearchJobsRequest{
 		JobQuery: monsterApiSearchJobsJobQuery{
 			Locations: []monsterApiSearchJobsLocation{
-				{Address: "Gironde, Nouvelle-Aquitaine", Country: "fr"},
+				{Address: "Bordeaux", Country: "fr"},
 			},
 			Query: query,
 		},

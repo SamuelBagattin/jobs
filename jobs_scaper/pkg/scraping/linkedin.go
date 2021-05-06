@@ -144,7 +144,7 @@ func (l *LinkedinClient) Scrape(query string) (*[]*JobInfo, error) {
 
 func (l *LinkedinClient) getNextPageUrl(resultsCount *int, query string) string {
 
-	return "https://fr.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=" + url.QueryEscape(query) + "&location=Bordeaux&geoId=&trk=homepage-jobseeker_jobs-search-bar_search-submit&position=1&pageNum=0&start=" + strconv.Itoa(*resultsCount)
+	return "https://fr.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=" + url.QueryEscape(query) + "&location=Gironde%2C%20Nouvelle-Aquitaine%2C%20France&geoId=&trk=homepage-jobseeker_jobs-search-bar_search-submit&position=1&pageNum=0&start=" + strconv.Itoa(*resultsCount)
 }
 
 func (l LinkedinClient) GetConfig() *ClientConfig {
