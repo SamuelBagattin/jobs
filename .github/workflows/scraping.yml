@@ -21,7 +21,7 @@ jobs:
            go-version: '1.15.12'
            
       - name: "Debug"
-        run: ls -latr && pwd
+        run: ls
         working-directory: ${{ env.working_dir }}
       
       - name: "Restore dependencies"
