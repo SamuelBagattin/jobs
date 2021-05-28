@@ -11,7 +11,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      working-directory: "jobs_scraper"
+      working-directory: "jobs_scaper"
     
     steps:
     - uses: actions/checkout@v2
