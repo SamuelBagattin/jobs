@@ -11,6 +11,8 @@ jobs:
   scrape:
     name: "Scrap all sites"
     runs-on: "ubuntu-latest"
+    env:
+      working-directory: "jobs_scaper"
     
     steps:
       - uses: "actions/checkout@v2"
