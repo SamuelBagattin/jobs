@@ -11,11 +11,24 @@ jobs:
   scrape:
     name: "Scrap all sites"
     runs-on: "ubuntu-20.04"
+    env:
+      working_dir: "./jobs_scraper"
     steps:
       - uses: "actions/checkout@v2"
+      
       - uses: actions/setup-go@v1
+      
+      - name: "Restore dependencies"
+        run: go get ./...
+        working-directory: ${{ env.working_dir }}
+        
+      - name: "Debug"
+        run: ls -latr && pwd
+        working-directory: ${{ env.working_dir }}
+        
       - name: "Run"
-        run: go run ./jobs_scaper/entrypoints/single/
+        run: go run ./entrypoints/single/
+        working-directory: ${{ env.working_dir }}
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
