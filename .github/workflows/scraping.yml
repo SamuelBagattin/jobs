@@ -2,7 +2,7 @@ name: SCraping
 
 on:
   schedule:
-    - cron: "0 * * * *"
+    - cron: "0 0 * * *"
   # Allow running manually
   workflow_dispatch:
 
@@ -10,7 +10,7 @@ jobs:
 
   scrape:
     name: "Scrap all sites"
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-latest"
     env:
       working_dir: "./jobs_scraper"
     steps:
