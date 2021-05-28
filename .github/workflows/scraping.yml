@@ -12,7 +12,7 @@ jobs:
     name: "Scrap all sites"
     runs-on: "ubuntu-latest"
     env:
-      working_dir: "jobs_scraper"
+      working-directory: "jobs_scraper"
     steps:
       - uses: "actions/checkout@v2"
       
@@ -25,11 +25,11 @@ jobs:
       
       - name: "Restore dependencies"
         run: go get ./...
-        working-directory: ${{ env.working_dir }}
+        working-directory: ${{ env.working-directory }}
         
       - name: "Run"
         run: go run ./entrypoints/single/
-        working-directory: ${{ env.working_dir }}
+        working-directory: ${{ env.working-directory }}
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
