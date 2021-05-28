@@ -12,7 +12,7 @@ jobs:
     name: "Scrap all sites"
     runs-on: "ubuntu-latest"
     env:
-      working_dir: "./jobs_scraper"
+      working_dir: "jobs_scraper"
     steps:
       - uses: "actions/checkout@v2"
       
