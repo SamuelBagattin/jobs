@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sns"
@@ -10,6 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"jobs_scaper/pkg/aws_sts"
 	"jobs_scaper/pkg/env"
+	"jobs_scaper/pkg/post_scraping"
 	"jobs_scaper/pkg/scraping"
 	"jobs_scaper/pkg/upload"
 )
@@ -55,25 +55,10 @@ func main() {
 			}
 			fmt.Printf("%v", deleteMessage)
 
-			postScrapingErr := postScraping(scrapingRes, snsClient)
+			postScrapingErr := post_scraping.SendResultToSns(scrapingRes, snsClient)
 			if postScrapingErr != nil {
 				return
 			}
 		}
 	}
-}
-
-func postScraping(queriesSummary *scraping.FinalScrapingResult, snsClient *sns.SNS) error {
-	stringMessage, errMarshal := json.Marshal(queriesSummary)
-	if errMarshal != nil {
-		return errMarshal
-	}
-	_, err := snsClient.Publish(&sns.PublishInput{
-		Message:  aws.String(string(stringMessage)),
-		TopicArn: env.GetSnsTopicDestinationArn(),
-	})
-	if err != nil {
-		return err
-	}
-	return nil
 }
