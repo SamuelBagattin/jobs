@@ -19,13 +19,13 @@ jobs:
       - uses: actions/setup-go@v1
         with:
            go-version: '1.15.12'
+           
+      - name: "Debug"
+        run: ls -latr && pwd
+        working-directory: ${{ env.working_dir }}
       
       - name: "Restore dependencies"
         run: go get ./...
-        working-directory: ${{ env.working_dir }}
-        
-      - name: "Debug"
-        run: ls -latr && pwd
         working-directory: ${{ env.working_dir }}
         
       - name: "Run"
