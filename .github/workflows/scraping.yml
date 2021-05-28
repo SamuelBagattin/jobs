@@ -25,11 +25,11 @@ jobs:
         run: ls
       
       - name: "Restore dependencies"
-        run: cd jobs_scraper && go get ./...
+        run: go get ./...
         working-directory: ${{ env.working-directory }}
         
       - name: "Run"
-        run: cd jobs_scraper && go run ./entrypoints/single/
+        run: go run ./entrypoints/single/
         working-directory: ${{ env.working-directory }}
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
