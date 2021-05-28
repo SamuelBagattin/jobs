@@ -22,7 +22,6 @@ jobs:
            
       - name: "Debug"
         run: ls
-        working-directory: ${{ env.working_dir }}
       
       - name: "Restore dependencies"
         run: go get ./...
