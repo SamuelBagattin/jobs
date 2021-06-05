@@ -32,6 +32,10 @@ namespace Jobs.Aggregator.Aws.Configuration
             Environment.GetEnvironmentVariable("DESTINATION_DATA_DISTRIBUTION_ID") ??
             throw new MissingEnvironmentVariableException("DESTINATION_DATA_DISTRIBUTION_ID");
 
+        public string NewJobsBucketName => Environment.GetEnvironmentVariable("NEWJOBS_BUCKET_NAME") ??
+                                           throw new MissingEnvironmentVariableException(
+                                               "NEWJOBS_BUCKET_NAME");
+
         public bool UploadResults => OnLambda;
 
         public bool WriteResultsToLocal => !OnLambda;
