@@ -25,6 +25,8 @@ jobs:
       run: go get ./...
       working-directory: ${{ env.working-directory }}
 
-    - name: Build
-      run: go build -v ./...
-      working-directory: ${{ env.working-directory }}
+    - name: Build linux arm64
+      run: go build -o jobs_scraper_${{ env.SEMVER }}_linux_arm64 ./cmd/grpc-chat
+      env:
+        GOOS: linux
+        GOARCH: arm64
