@@ -1,8 +1,10 @@
 package utils
 
 import (
+	"fmt"
 	log "github.com/sirupsen/logrus"
 	"math/rand"
+	"os"
 	"time"
 	"unsafe"
 )
@@ -51,6 +53,27 @@ func ExecuteWithRetries(executor func() error, retries int) error {
 		actualRetries++
 		time.Sleep(RandScrapingInterval())
 		log.Debug("Retrying...")
+	}
+	return nil
+}
+
+func WriteToFile(filename string, content string) error {
+	f, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	_, err = f.WriteString(content)
+	if err != nil {
+		fmt.Println(err)
+		closeErr := f.Close()
+		if closeErr != nil {
+			return closeErr
+		}
+		return err
+	}
+	err = f.Close()
+	if err != nil {
+		return err
 	}
 	return nil
 }

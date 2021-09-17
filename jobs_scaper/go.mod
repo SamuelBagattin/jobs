@@ -4,7 +4,6 @@ go 1.15
 
 require (
 	github.com/aws/aws-sdk-go v1.36.29
-	github.com/bufferapp/sqs-worker-go v0.0.0-20181101064454-7e780f286181
 	github.com/gocolly/colly/v2 v2.1.0
 	github.com/google/go-cmp v0.5.2 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
