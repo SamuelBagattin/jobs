@@ -6,6 +6,7 @@ namespace Jobs.Aggregator.Aws.Configuration
         string DestinationBucketName { get; }
         string DestinationFileKey { get; }
         string DestinationCloudfrontDistributionId { get; }
+        string NewJobsBucketName { get; }
         bool UploadResults { get; }
 
         bool WriteResultsToLocal { get; }

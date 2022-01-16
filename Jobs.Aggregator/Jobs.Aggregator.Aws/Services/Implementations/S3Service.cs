@@ -26,7 +26,7 @@ namespace Jobs.Aggregator.Aws.Services.Implementations
             return (await _s3Client.ListObjectsAsync(bucketName)).S3Objects.Select(e => e.Key);
         }
 
-        public async Task PutObjectAsync(string bucketName, string key, string body)
+        public async Task PutJsonObjectAsync(string bucketName, string key, string body)
         {
             if (bucketName is null)
             {

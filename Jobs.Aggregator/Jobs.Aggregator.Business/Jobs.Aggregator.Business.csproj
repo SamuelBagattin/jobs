@@ -8,6 +8,7 @@
     <ItemGroup>
       <ProjectReference Include="..\Jobs.Aggregator.Aws\Jobs.Aggregator.Aws.csproj" />
       <ProjectReference Include="..\Jobs.Aggregator.Core\Jobs.Aggregator.Core.csproj" />
+      <ProjectReference Include="..\Jobs.Aggregator.Utils\Jobs.Aggregator.Utils.csproj" />
     </ItemGroup>
 
 </Project>

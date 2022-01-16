@@ -16,7 +16,7 @@ resource "aws_s3_bucket" "scraper_results" {
 ////
 resource "aws_cloudwatch_event_rule" "scraper_trigger" {
   name                = local.scraper_event_trigger_name
-  schedule_expression = "cron(0 2 * * ? *)"
+  schedule_expression = "cron(0 6 * * ? *)"
   tags = {
     Project : local.project_name
     Name : local.scraper_event_trigger_name

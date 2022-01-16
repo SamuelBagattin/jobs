@@ -23,6 +23,17 @@ locals {
   aggregator_policy_attachment_name = "${local.project_name}-aggregator-policy-attachment"
   aggregator_trigger_sqs_queue_name = "${local.project_name}-aggregator-trigger-sqs-queue"
 
+  newjobs_history_bucket_name = "${local.project_name}-newjobs-history"
+
+  discord_bot_lambda_name                = "${local.project_name}-discordbot-lambda"
+  discord_bot_role_name                  = "${local.project_name}-discordbot-role"
+  discord_bot_token_secret_name          = "/${local.project_name}/discordbot/token"
+  discord_bot_paste_ee_token_secret_name = "/${local.project_name}/discordbot/pasteee_token"
+  discord_bot_iam_policy_name            = "${local.project_name}-discordbot-policy"
+  discord_bot_policy_attachment_name     = "${local.project_name}-discordbot-policy-attachment"
+
   website_distribution_name = "${local.project_name}-website-distribution"
   website_origin_id         = "${local.project_name}-website-origin"
+
+  aws_region = "eu-west-3"
 }

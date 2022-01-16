@@ -13,6 +13,7 @@ resource "aws_lambda_function" "aggregator" {
       SOURCE_DATA_BUCKET_NAME : aws_s3_bucket.scraper_results.bucket
       DESTINATION_DATA_BUCKET_NAME : aws_s3_bucket.aggregated_results.bucket
       DESTINATION_DATA_DISTRIBUTION_ID : aws_cloudfront_distribution.s3_distribution.id
+      NEWJOBS_BUCKET_NAME : aws_s3_bucket.new_jobs.bucket
     }
   }
 
@@ -28,23 +29,11 @@ resource "aws_lambda_function" "aggregator" {
 }
 
 resource "aws_iam_role" "aggregator_lambda" {
-  assume_role_policy = data.aws_iam_policy_document.aggregator_assume_role.json
+  assume_role_policy = data.aws_iam_policy_document.allow_lambda_assumerole.json
   name               = local.aggregator_iam_role_name
   tags = {
     Project : local.project_name
     Name : local.aggregator_iam_role_name
-  }
-}
-
-data "aws_iam_policy_document" "aggregator_assume_role" {
-  version = "2012-10-17"
-  statement {
-    actions = ["sts:AssumeRole"]
-    principals {
-      identifiers = ["lambda.amazonaws.com"]
-      type        = "Service"
-    }
-    effect = "Allow"
   }
 }
 
@@ -67,7 +56,7 @@ data "aws_iam_policy_document" "aggregator_policy" {
     resources = ["${aws_s3_bucket.scraper_results.arn}/*"]
   }
   statement {
-    actions   = ["s3:PutObject"]
+    actions   = ["s3:PutObject", "s3:GetObject"]
     effect    = "Allow"
     resources = ["${aws_s3_bucket.aggregated_results.arn}/*"]
   }
@@ -85,6 +74,11 @@ data "aws_iam_policy_document" "aggregator_policy" {
     actions   = ["cloudfront:CreateInvalidation"]
     effect    = "Allow"
     resources = [aws_cloudfront_distribution.s3_distribution.arn]
+  }
+  statement {
+    actions   = ["s3:PutObject"]
+    effect    = "Allow"
+    resources = ["${aws_s3_bucket.new_jobs.arn}/*"]
   }
 }
 

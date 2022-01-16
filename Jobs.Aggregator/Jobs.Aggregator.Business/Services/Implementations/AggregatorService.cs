@@ -9,6 +9,7 @@ using Jobs.Aggregator.Aws.Services.Contracts;
 using Jobs.Aggregator.Core.FinalModels;
 using Jobs.Aggregator.Core.Services.Contracts;
 using Jobs.Aggregator.Core.TransitionModels;
+using Jobs.Aggregator.Utils;
 using Microsoft.Extensions.Logging;
 
 namespace Jobs.Aggregator.Core.Services.Implementations
@@ -21,17 +22,24 @@ namespace Jobs.Aggregator.Core.Services.Implementations
         private readonly IAggregatorResultsService _aggregatorResultsService;
         private readonly IAwsConfigurationService _awsConfigurationService;
         private readonly ITechnologiesAggregatorService _technologiesAggregatorService;
+        private readonly IIdService _idService;
+        private readonly INewJobsResultsService _newJobsResultsService;
+        private readonly INewJobsService _newJobsService;
 
         public AggregatorService(
             IScraperResultsService scraperResultsService,
             ITechnologiesService technologiesService,
             ILogger<AggregatorService> logger, IAggregatorResultsService aggregatorResultsService,
             IAwsConfigurationService awsConfigurationService,
-            ITechnologiesAggregatorService technologiesAggregatorService)
+            ITechnologiesAggregatorService technologiesAggregatorService, IIdService idService,
+            INewJobsResultsService newJobsResultsService, INewJobsService newJobsService)
         {
             _aggregatorResultsService = aggregatorResultsService;
             _awsConfigurationService = awsConfigurationService;
             _technologiesAggregatorService = technologiesAggregatorService;
+            _idService = idService;
+            _newJobsResultsService = newJobsResultsService;
+            _newJobsService = newJobsService;
             (_scraperResultsService, _technologiesService, _logger) =
                 (scraperResultsService, technologiesService, logger);
         }
@@ -57,7 +65,7 @@ namespace Jobs.Aggregator.Core.Services.Implementations
             {
                 Companies = new CompanyResponse
                 {
-                    Companies = GetTechnologiesStatistics(res)
+                    Companies = GetFinalCompanies(res)
                 },
                 Technologies = new TechnologiesResponse
                 {
@@ -70,8 +78,11 @@ namespace Jobs.Aggregator.Core.Services.Implementations
                 await File.WriteAllTextAsync("../../../../index.json", JsonSerializer.Serialize(res2));
             }
 
+            var previousJobs = await _aggregatorResultsService.GetLastUploadedAggregatedJobs();
+            var newJobs = _newJobsService.GetNewJobs(previousJobs, res2);
             if (_awsConfigurationService.UploadResults)
             {
+                await _newJobsResultsService.UploadNewJobs(newJobs);
                 await _aggregatorResultsService.UploadAggregatedJobs(res2);
             }
 
@@ -94,6 +105,7 @@ namespace Jobs.Aggregator.Core.Services.Implementations
                                 job.Title,
                                 new JobByTechno
                                 {
+                                    Id = _idService.GetJobId(job.Company, job.Title).ToString(),
                                     SitesWithUrls = new Dictionary<string, string> {{job.Site, job.Url}},
                                     MainTechnologies = job.MainTechnologies,
                                     SecondaryTechnologies = job.SecondaryTechnologies,
@@ -122,6 +134,7 @@ namespace Jobs.Aggregator.Core.Services.Implementations
                 {
                     acc[job.Company].Jobs[job.Title] = new JobByTechno
                     {
+                        Id = _idService.GetJobId(job.Company, job.Title).ToString(),
                         MainTechnologies = job.MainTechnologies,
                         SecondaryTechnologies = job.SecondaryTechnologies,
                         Title = job.Title,
@@ -136,7 +149,7 @@ namespace Jobs.Aggregator.Core.Services.Implementations
             return acc;
         }
 
-        private IEnumerable<FinalCompany> GetTechnologiesStatistics(HashSet<AggregatedCompany> res)
+        private IEnumerable<FinalCompany> GetFinalCompanies(HashSet<AggregatedCompany> res)
         {
             return res.Select(e => new FinalCompany
             {
