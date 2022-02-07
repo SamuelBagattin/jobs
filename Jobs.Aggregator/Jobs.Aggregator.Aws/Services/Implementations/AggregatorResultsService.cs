@@ -22,9 +22,16 @@ namespace Jobs.Aggregator.Aws.Services.Implementations
 
         public async Task UploadAggregatedJobs(ResponseRoot body)
         {
-            await _s3Service.PutObjectAsync(_iawsConfigurationService.DestinationBucketName,
+            await _s3Service.PutJsonObjectAsync(_iawsConfigurationService.DestinationBucketName,
                 _iawsConfigurationService.DestinationFileKey, JsonSerializer.Serialize(body));
             await _cloudfrontService.CreateInvalidationByPath(_iawsConfigurationService.DestinationCloudfrontDistributionId, $"/{_iawsConfigurationService.DestinationFileKey}");
+        }
+
+        public async Task<ResponseRoot> GetLastUploadedAggregatedJobs()
+        {
+            var stringRes = await _s3Service.ReadObjectDataAsync(_iawsConfigurationService.DestinationBucketName,
+                _iawsConfigurationService.DestinationFileKey);
+            return JsonSerializer.Deserialize<ResponseRoot>(stringRes);
         }
     }
 }

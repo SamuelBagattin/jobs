@@ -6,6 +6,7 @@ using Jobs.Aggregator.Aws.Services.Contracts;
 using Jobs.Aggregator.Aws.Services.Implementations;
 using Jobs.Aggregator.Core.Services.Contracts;
 using Jobs.Aggregator.Core.Services.Implementations;
+using Jobs.Aggregator.Utils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -33,6 +34,10 @@ namespace Jobs.Aggregator.Local
                         .AddTransient<ICloudfrontService, CloudfrontService>()
                         .AddTransient<IAwsConfigurationService, AwsConfigurationService>()
                         .AddTransient<ITechnologiesAggregatorService, TechnologiesAggregatorService>()
+                        .AddTransient<IXXHash32, XXHash32>()
+                        .AddTransient<IIdService, IdService>()
+                        .AddTransient<INewJobsService, NewJobsService>()
+                        .AddTransient<INewJobsResultsService, NewJobsResultsService>()
                         .AddAWSService<IAmazonS3>()
                         .AddAWSService<IAmazonCloudFront>()
                 );

@@ -6,5 +6,7 @@ namespace Jobs.Aggregator.Aws.Services.Contracts
     public interface IAggregatorResultsService
     {
         Task UploadAggregatedJobs(ResponseRoot body);
+
+        Task<ResponseRoot> GetLastUploadedAggregatedJobs();
     }
 }
