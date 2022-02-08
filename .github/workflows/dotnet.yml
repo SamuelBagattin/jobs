@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ master ]
 
+permissions:
+  id-token: write
+
 jobs:
   build_test:
     runs-on: ubuntu-latest
@@ -19,6 +22,9 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 5.0.x
+
+    - name: Install Global tools
+      run: dotnet tool install --global Amazon.Lambda.Tools
         
     - name: Restore dependencies
       run: dotnet restore
@@ -31,3 +37,16 @@ jobs:
     - name: Test
       run: dotnet test --no-build --verbosity normal
       working-directory: ${{ env.working-directory }}
+
+    - name: Package
+      run: dotnet-lambda package
+      working-directory: ${{ env.working-directory }}/Jobs.Aggregator.Local
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-region: eu-west-3
+        role-to-assume: arn:aws:iam::326154968182:role/githubActions-iamRole
+
+    - name: Deploy
+      run: aws lambda update-function-code --function-name jobs-aggregator-lambda --region eu-west-3 --zip-file fileb://./bin/Release/netcoreapp3.1/Jobs.Aggregator.Local.zip
