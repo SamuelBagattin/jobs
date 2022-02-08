@@ -44,10 +44,12 @@ jobs:
       working-directory: ${{ env.working-directory }}/Jobs.Aggregator.Local
 
     - name: Configure AWS Credentials
+      if: GITHUB_REF#refs/heads/ == 'master'
       uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-region: eu-west-3
         role-to-assume: arn:aws:iam::326154968182:role/githubActions-iamRole
 
     - name: Deploy
+      if: GITHUB_REF#refs/heads/ == 'master'
       run: aws lambda update-function-code --function-name jobs-aggregator-lambda --region eu-west-3 --zip-file fileb://./bin/Release/netcoreapp3.1/Jobs.Aggregator.Local.zip
