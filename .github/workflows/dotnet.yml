@@ -56,5 +56,6 @@ jobs:
         role-to-assume: arn:aws:iam::326154968182:role/githubActions-iamRole
 
     - name: Deploy
+      working-directory: ${{ env.working-directory }}/Jobs.Aggregator.Local
       if: steps.extract_branch.outputs.branch == 'master'
       run: aws lambda update-function-code --function-name jobs-aggregator-lambda --region eu-west-3 --zip-file fileb://./bin/Release/netcoreapp3.1/Jobs.Aggregator.Local.zip
