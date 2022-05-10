@@ -1,0 +1,16 @@
+[Unit]
+Description=Demo service
+
+[Service]
+User={{ service_user }}
+Group={{ service_group }}
+ExecStart={{ service_exec }}
+{% for dict_item in service_env %}
+   {% for key, value in dict_item.items() %}
+Environment="{{ key }}={{ value }}"
+   {% endfor %}
+{% endfor %}
+
+
+[Install]
+WantedBy=multi-user.target

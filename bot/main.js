@@ -1,7 +1,4 @@
-const Discord = require('discord.js');
 const axios = require("axios")
-const readline = require('readline');
-const {createReadStream} = require('fs')
 
 const {SSMClient, GetParameterCommand} = require("@aws-sdk/client-ssm")
 const { S3 } = require("@aws-sdk/client-s3")

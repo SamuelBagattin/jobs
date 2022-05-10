@@ -25,6 +25,7 @@ func main() {
 	snsClient := sns.New(sess)
 
 	s3ScrapingClient := upload.NewS3Client(sess)
+	env.GetSnsTopicDestinationArn()
 
 	for {
 		var sqsQueueUrl = env.GetSqsQueueUrl()

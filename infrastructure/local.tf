@@ -36,4 +36,6 @@ locals {
   website_origin_id         = "${local.project_name}-website-origin"
 
   aws_region = "eu-west-3"
+
+  githubactions_jobs_iam_role_name = "githubActions-jobs-role"
 }

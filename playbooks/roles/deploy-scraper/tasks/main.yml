@@ -1,11 +1,4 @@
 ---
-
-- name: Install dotnet
-  shell: dotnet --version || (wget https://dot.net/v1/dotnet-install.sh && chmod +x ./dotnet-install.sh && ./dotnet-install.sh && PATH=$PATH:~/.dotnet/dotnet)
-
-- name: Install gitversion
-  shell: dotnet tool update --global GitVersion.Tool --version 5.6.9
-
 - name: Get scraper_dir
   shell: echo "$(git rev-parse --show-toplevel)/jobs_scaper"
   register: scraper_dir
@@ -17,9 +10,10 @@
     - GOOS: linux
     - GOARM: 5
 
-#- name: Zip
-#  shell: zip -j /tmp/scraper/main.zip /tmp/scraper/main
-#
-#- name: "Deploy to lambda"
-#  shell: aws lambda update-function-code --function-name jobs-scraper-lambda --region eu-west-3 --zip-file fileb:///tmp/scraper/main.zip
-
+- name: Template a file to /etc/file.conf
+  ansible.builtin.template:
+    src: /scraper.service.j2
+    dest: /etc/file.conf
+    owner: bin
+    group: wheel
+    mode: '0644'

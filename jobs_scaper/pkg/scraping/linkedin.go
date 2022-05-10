@@ -59,11 +59,11 @@ func (l *LinkedinClient) Scrape(query string) (*[]*JobInfo, error) {
 	})
 
 	var page []*JobInfo
-	var cookie = ""
+	/*var cookie = ""
 
 	c.OnResponseHeaders(func(response *colly.Response) {
 		cookie = response.Headers.Get("set-cookie")
-	})
+	})*/
 
 	c.OnScraped(func(response *colly.Response) {
 		i = len(page)

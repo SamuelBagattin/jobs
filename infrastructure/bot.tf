@@ -2,7 +2,8 @@ resource "aws_lambda_function" "bot" {
   function_name = local.discord_bot_lambda_name
   handler       = "main.handler"
   role          = aws_iam_role.bot_role.arn
-  runtime       = "nodejs12.x"
+  runtime       = "nodejs14.x"
+  architectures = ["x86_64"]
   filename      = "bot.zip"
   timeout       = 30
   memory_size   = 128
@@ -10,8 +11,8 @@ resource "aws_lambda_function" "bot" {
   environment {
     variables = {
       ON_LAMBDA : true
-      TOKEN_SSM_PARAM_NAME : aws_ssm_parameter.discord_bot_token.name
-      PASTEEE_TOKEN_SSM_PARAM_NAME : aws_ssm_parameter.paste_ee_token.name
+      TOKEN_SSM_PARAM_NAME : data.aws_ssm_parameter.discord_bot_token.name
+      PASTEEE_TOKEN_SSM_PARAM_NAME : data.aws_ssm_parameter.paste_ee_token.name
     }
   }
 
@@ -48,7 +49,7 @@ data "aws_iam_policy_document" "discord_bot_policy" {
   statement {
     actions   = ["ssm:GetParameter"]
     effect    = "Allow"
-    resources = [aws_ssm_parameter.discord_bot_token.arn, aws_ssm_parameter.paste_ee_token.arn]
+    resources = [data.aws_ssm_parameter.discord_bot_token.arn, data.aws_ssm_parameter.paste_ee_token.arn]
   }
   statement {
     actions   = ["s3:GetObject"]
@@ -77,16 +78,10 @@ resource "aws_s3_bucket_notification" "bucket_notification" {
   depends_on = [aws_lambda_permission.allow_bucket_bot]
 }
 
-resource "aws_ssm_parameter" "discord_bot_token" {
+data "aws_ssm_parameter" "discord_bot_token" {
   name        = local.discord_bot_token_secret_name
-  description = "Secret for discord bot"
-  type        = "SecureString"
-  value       = var.discord_webhook_token
 }
 
-resource "aws_ssm_parameter" "paste_ee_token" {
+data "aws_ssm_parameter" "paste_ee_token" {
   name        = local.discord_bot_paste_ee_token_secret_name
-  description = "Secret for discord bot paste ee"
-  type        = "SecureString"
-  value       = var.paste_ee_token
 }

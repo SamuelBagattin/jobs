@@ -3,13 +3,12 @@
 ////
 resource "aws_s3_bucket" "scraper_results" {
   bucket = local.scraper_results_bucket_name
-  acl    = "private"
+  acl = "private"
   tags = {
     Name    = local.scraper_results_bucket_name
     Project = local.project_name
   }
 }
-
 
 ////
 // EventBridge
@@ -29,9 +28,6 @@ resource "aws_cloudwatch_event_target" "scraper_target" {
   rule      = aws_cloudwatch_event_rule.scraper_trigger.name
 }
 
-
-
-
 ////
 // IAM
 ////
@@ -43,12 +39,6 @@ resource "aws_iam_role" "scraper" {
     Project : local.project_name
     Name : local.scraper_iam_role_name
   }
-}
-
-resource "aws_iam_policy_attachment" "scraper_attachment_to_basicrole" {
-  name       = "${local.scraper_policy_attachment}_to_basicexecutionrole"
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-  roles      = [aws_iam_role.scraper.name]
 }
 
 resource "aws_iam_policy_attachment" "scraper_attachment" {

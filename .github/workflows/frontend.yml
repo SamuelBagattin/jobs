@@ -1,0 +1,54 @@
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: Frontend
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      working-directory: "frontend"
+      
+    steps:
+    
+    - uses: actions/checkout@v2
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: 16.x
+
+    - name: Extract branch name
+      shell: bash
+      run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+      id: extract_branch
+        
+    - run: yarn install --frozen-lockfile
+      working-directory: ${{ env.working-directory }}
+    
+    - run: yarn run build --prod
+      working-directory: ${{ env.working-directory }}
+
+    - name: Configure AWS Credentials
+      if: steps.extract_branch.outputs.branch == 'master'
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-region: eu-west-3
+        role-to-assume: arn:aws:iam::326154968182:role/githubActions-iamRole
+
+    - name: "Deploy to s3"
+      if: steps.extract_branch.outputs.branch == 'master'
+      run: aws s3 cp --recursive "./dist/jobs" s3://jobs-aggregator-results
+      working-directory: ${{ env.working-directory }}
+
+    - name: "Invalidate cloudfront cache"
+      if: steps.extract_branch.outputs.branch == 'master'
+      run: aws cloudfront create-invalidation --distribution-id E3B4EZ17897IFP --paths '/*'
+      working-directory: ${{ env.working-directory }}

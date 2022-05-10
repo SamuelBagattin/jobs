@@ -13,5 +13,5 @@ func getEnvVar(name *string) *string {
 	}
 	fmt.Println(errors.New(fmt.Sprintf("Missing Env Var: %s", *name)))
 	os.Exit(1)
-	panic(1)
+	return nil
 }

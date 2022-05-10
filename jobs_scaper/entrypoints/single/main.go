@@ -5,6 +5,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ssm"
 	log "github.com/sirupsen/logrus"
 	"jobs_scaper/pkg/aws_sts"
+	"jobs_scaper/pkg/env"
 	"jobs_scaper/pkg/post_scraping"
 	"jobs_scaper/pkg/scraping"
 	"jobs_scaper/pkg/upload"
@@ -13,6 +14,7 @@ import (
 func main() {
 	log.SetLevel(log.TraceLevel)
 	log.Debug("Init")
+	env.GetSnsTopicDestinationArn()
 
 	sess := aws_sts.InitSession()
 	ssmClient := ssm.New(sess)

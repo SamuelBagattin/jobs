@@ -75,12 +75,12 @@ func scrapeQuery(query string, s3ScrapClient *upload.S3ScrapingClient) *int {
 
 	scrapingClients = append(scrapingClients, linkedInClient)
 
-	var monsterClient, nMonsterClientErr = NewMonsterClient()
-	if nMonsterClientErr != nil {
-		panic(nMonsterClientErr)
-	}
+	//var monsterClient, nMonsterClientErr = NewMonsterClient()
+	//if nMonsterClientErr != nil {
+	//	panic(nMonsterClientErr)
+	//}
 
-	scrapingClients = append(scrapingClients, monsterClient)
+	//scrapingClients = append(scrapingClients, monsterClient)
 
 	var wg sync.WaitGroup
 	var jobsCount = 0

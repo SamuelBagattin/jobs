@@ -1,18 +1,20 @@
-resource "aws_iam_policy_attachment" "basic_lambda" {
-  name       = "jobs-policyattachement-basiclambdarole"
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-  roles = [
+locals {
+  lambdas_roles_names = [
     aws_iam_role.aggregator_lambda.name,
-    aws_iam_role.bot_role.name
+    aws_iam_role.bot_role.name,
+    aws_iam_role.scraper.name
   ]
 }
-resource "aws_iam_policy_attachment" "xray_lambda" {
-  name       = "jobs-policyattachement-xraylambdarole"
+
+resource "aws_iam_role_policy_attachment" "basic_lambda" {
+  for_each = {for role in local.lambdas_roles_names: role => role}
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+  role = each.value
+}
+resource "aws_iam_role_policy_attachment" "xray_lambda" {
+  for_each = {for role in local.lambdas_roles_names: role => role}
   policy_arn = "arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess"
-  roles = [
-    aws_iam_role.aggregator_lambda.name,
-    aws_iam_role.bot_role.name
-  ]
+  role = each.value
 }
 
 data "aws_iam_policy_document" "allow_lambda_assumerole" {
