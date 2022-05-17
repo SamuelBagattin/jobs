@@ -65,7 +65,7 @@ func scrapeQuery(query string, s3ScrapClient *upload.S3ScrapingClient) *int {
 		}
 	}()
 	log.SetLevel(log.TraceLevel)
-
+	var currentDateTime = time.Now().UTC().Format(time.UnixDate)
 	var scrapingClients []Client
 
 	var linkedInClient, nLinkedInClientErr = NewLinkedinClient()
@@ -99,7 +99,7 @@ func scrapeQuery(query string, s3ScrapClient *upload.S3ScrapingClient) *int {
 				log.Println("failed to serialize response:", err)
 				return
 			}
-			s3ScrapClient.UploadToFileByte(client.GetConfig().SiteName+url.QueryEscape(query), b, "application/json")
+			s3ScrapClient.UploadToFileByte(fmt.Sprintf("%s/%s%s", currentDateTime, client.GetConfig().SiteName, url.QueryEscape(query)), b, "application/json")
 			jobsCount += len(*res)
 		}()
 	}

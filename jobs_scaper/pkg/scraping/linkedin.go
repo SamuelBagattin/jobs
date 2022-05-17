@@ -1,7 +1,6 @@
 package scraping
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/gocolly/colly/v2"
@@ -76,19 +75,7 @@ func (l *LinkedinClient) Scrape(query string) (*[]*JobInfo, error) {
 				return visitError
 			}, 3)
 			if retryErr != nil {
-				log.Warning(l.logWithName("Error while fetching next page"))
-				err := utils.WriteToFile("linkedin.html", string(response.Body))
-				if err != nil {
-					panic(err)
-				}
-				headers, headersErr := json.Marshal(*response.Headers)
-				if headersErr != nil {
-					panic(headersErr)
-				}
-				err = utils.WriteToFile("headers.json", string(headers))
-				if err != nil {
-					panic(err)
-				}
+				log.Warning(l.logWithName(fmt.Sprintf("Error while fetching next page %v", l.getNextPageUrl(&i, query))))
 			}
 		}
 	})

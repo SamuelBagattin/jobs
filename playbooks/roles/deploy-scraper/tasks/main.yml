@@ -1,6 +1,6 @@
 ---
 - name: Get scraper_dir
-  shell: echo "$(git rev-parse --show-toplevel)/jobs_scaper"
+  shell: echo "$(git rev-parse --show-toplevel)/jobs_scaper/entrypoints/sqs_worker"
   register: scraper_dir
 
 - name: "Build"
@@ -10,10 +10,6 @@
     - GOOS: linux
     - GOARM: 5
 
-- name: Template a file to /etc/file.conf
-  ansible.builtin.template:
-    src: /scraper.service.j2
-    dest: /etc/file.conf
-    owner: bin
-    group: wheel
-    mode: '0644'
+
+
+
