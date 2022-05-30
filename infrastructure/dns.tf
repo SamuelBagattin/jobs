@@ -1,4 +1,4 @@
-resource "aws_route53_record" "jobs-samuelbagattin-com" {
+resource "aws_route53_record" "jobs_samuelbagattin_com" {
   name    = local.website_domain
   type    = "A"
   zone_id = data.aws_route53_zone.samuelbagattin.id

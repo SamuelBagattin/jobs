@@ -75,9 +75,6 @@ POLICY
   queue_url = aws_sqs_queue.aggregator_trigger.id
 }
 
-////
-// IAM
-////
 resource "aws_iam_policy" "allow_publish_message_to_scraper_snstopic" {
   name   = local.scraper_sns_topic_policy_name
   policy = data.aws_iam_policy_document.allow_publish_message_to_scraper_snstopic.json

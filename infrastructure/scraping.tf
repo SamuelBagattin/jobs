@@ -1,6 +1,3 @@
-////
-// Bucket
-////
 resource "aws_s3_bucket" "scraper_results" {
   bucket = local.scraper_results_bucket_name
   acl = "private"
@@ -10,9 +7,6 @@ resource "aws_s3_bucket" "scraper_results" {
   }
 }
 
-////
-// EventBridge
-////
 resource "aws_cloudwatch_event_rule" "scraper_trigger" {
   name                = local.scraper_event_trigger_name
   schedule_expression = "cron(0 6 * * ? *)"
@@ -27,10 +21,6 @@ resource "aws_cloudwatch_event_target" "scraper_target" {
   arn       = aws_sqs_queue.scraper_trigger.arn
   rule      = aws_cloudwatch_event_rule.scraper_trigger.name
 }
-
-////
-// IAM
-////
 
 resource "aws_iam_role" "scraper" {
   name               = local.scraper_iam_role_name
@@ -99,7 +89,7 @@ data "aws_iam_policy_document" "scraper_policy" {
 }
 
 
-// On Prem scraper
+# On Prem scraper
 resource "aws_iam_user" "scraper" {
   name = local.scraper_user_name
 }

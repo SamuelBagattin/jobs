@@ -3,8 +3,9 @@ locals {
   base_domain    = "samuelbagattin.com"
   project_name   = "jobs"
 
+  lambda_deployments_bucket_name = "${local.project_name}-lambda-deployments"
+
   scraper_results_bucket_name         = "${local.project_name}-scraper-results"
-  scraper_lambda_name                 = "${local.project_name}-scraper-lambda"
   scraper_user_name                   = "${local.project_name}-scraper-user"
   scraper_iam_role_name               = "${local.project_name}-scraper-role"
   scraper_iam_policy_name             = "${local.project_name}-scraper-policy"
@@ -34,8 +35,6 @@ locals {
 
   website_distribution_name = "${local.project_name}-website-distribution"
   website_origin_id         = "${local.project_name}-website-origin"
-
-  aws_region = "eu-west-3"
 
   githubactions_jobs_iam_role_name = "githubActions-jobs-role"
 }

@@ -1,3 +1,19 @@
+data "archive_file" "aggregator" {
+  type = "zip"
+
+  source_dir  = "${path.module}/hello-world"
+  output_path = "${path.module}/hello-world.zip"
+}
+
+resource "aws_s3_object" "aggregator" {
+  bucket = aws_s3_bucket.lambda_deployments.id
+
+  key    = "hello-world.zip"
+  source = data.archive_file.aggregator.output_path
+
+  etag = filemd5(data.archive_file.aggregator.output_path)
+}
+
 resource "aws_lambda_function" "aggregator" {
   function_name = local.aggregator_lambda_name
   handler       = "Jobs.Aggregator.Local::Jobs.Aggregator.Local.Program::Main"

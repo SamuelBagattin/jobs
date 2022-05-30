@@ -36,11 +36,6 @@ POLICY
   queue_url = aws_sqs_queue.scraper_trigger.id
 }
 
-
-////
-// IAM
-////
-
 resource "aws_iam_policy" "cloudwatchlogs_access" {
   name   = "${local.project_name}-cloudwatchlogs-access-policy"
   policy = data.aws_iam_policy_document.cloudwatchlogs_access.json
