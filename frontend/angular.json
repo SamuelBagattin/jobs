@@ -125,5 +125,8 @@
       }
     }
   },
-  "defaultProject": "jobs"
+  "defaultProject": "jobs",
+  "cli": {
+    "analytics": "85825d92-aa6c-40ad-868b-c05a1f580860"
+  }
 }
