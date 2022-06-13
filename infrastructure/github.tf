@@ -9,7 +9,7 @@ resource "github_repository" "jobs" {
   has_issues           = true
   has_projects         = true
   has_wiki             = true
-  homepage_url         = "https://${aws_route53_record.jobs-samuelbagattin-com.name}"
+  homepage_url         = "https://${aws_route53_record.jobs_samuelbagattin_com.name}"
   vulnerability_alerts = true
 }
 
@@ -25,7 +25,7 @@ module "aws_github_actions_oidc" {
   create_oidc_provider = false
   create_iam_roles     = true
   oidc_provider_arn    = data.aws_ssm_parameter.github_actions_oidc_provider_arn.value
-  permissions          = {
+  permissions = {
     "SamuelBagattin" : {
       role_name : "jobs-githubActions-role"
       allowed_branches : ["coucou"]
@@ -53,7 +53,7 @@ resource "aws_iam_policy" "github_actions" {
 
 data "aws_iam_policy_document" "github_actions" {
   statement {
-    effect  = "Allow"
+    effect = "Allow"
     actions = [
       "lambda:UpdateFunctionCode"
     ]

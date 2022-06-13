@@ -15,7 +15,7 @@ async function streamToString (stream) {
 }
 
 exports.handler = async (event, context) => {
-    console.log("get param")
+    console.log(JSON.stringify(event))
     const token = await ssm.send(new GetParameterCommand({
         Name: process.env.TOKEN_SSM_PARAM_NAME,
         WithDecryption: true
@@ -64,7 +64,7 @@ exports.handler = async (event, context) => {
 
     const pasteData = (await axios(postConfig)).data;
 
-
+    console.log(pasteData.link)
     try {
         const axiosResponse = await axios.post(`https://discord.com/api/webhooks/849767517979148298/${token.Parameter.Value}`, {
             "content": `Voici les jobs du jour : [ICI](${pasteData.link})`           ,

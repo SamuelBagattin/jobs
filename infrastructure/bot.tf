@@ -1,12 +1,30 @@
+data "archive_file" "bot" {
+  type = "zip"
+
+  source_dir  = "${path.root}/../bot"
+  output_path = "${path.root}/../out/zip/bot/hello-world.zip"
+}
+
+resource "aws_s3_object" "bot" {
+  bucket = aws_s3_bucket.lambda_deployments.id
+
+  key    = "bot.zip"
+  source = data.archive_file.bot.output_path
+
+  etag = filemd5(data.archive_file.bot.output_path)
+}
+
 resource "aws_lambda_function" "bot" {
-  function_name = local.discord_bot_lambda_name
-  handler       = "main.handler"
-  role          = aws_iam_role.bot_role.arn
-  runtime       = "nodejs14.x"
-  architectures = ["x86_64"]
-  filename      = "bot.zip"
-  timeout       = 30
-  memory_size   = 128
+  function_name    = local.discord_bot_lambda_name
+  handler          = "main.handler"
+  role             = aws_iam_role.bot_role.arn
+  runtime          = "nodejs14.x"
+  architectures    = ["x86_64"]
+  s3_bucket        = aws_s3_object.bot.bucket
+  s3_key           = aws_s3_object.bot.key
+  source_code_hash = data.archive_file.bot.output_base64sha256
+  timeout          = 30
+  memory_size      = 128
 
   environment {
     variables = {
@@ -79,9 +97,9 @@ resource "aws_s3_bucket_notification" "bucket_notification" {
 }
 
 data "aws_ssm_parameter" "discord_bot_token" {
-  name        = local.discord_bot_token_secret_name
+  name = local.discord_bot_token_secret_name
 }
 
 data "aws_ssm_parameter" "paste_ee_token" {
-  name        = local.discord_bot_paste_ee_token_secret_name
+  name = local.discord_bot_paste_ee_token_secret_name
 }

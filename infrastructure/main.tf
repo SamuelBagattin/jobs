@@ -1,22 +1,24 @@
 data "aws_ssm_parameter" "github_token" {
-  name = "/github/samuelbagattin/token"
+  name            = "/github/samuelbagattin/token"
   with_decryption = true
 }
 
 provider "aws" {
-  region = "eu-west-3"
+  region  = "eu-west-3"
   profile = "samuel"
 }
 
 provider "aws" {
-  region = "us-east-1"
-  alias  = "nvirignia"
+  region  = "us-east-1"
+  alias   = "nvirignia"
   profile = "samuel"
 }
 
 provider "github" {
   token = data.aws_ssm_parameter.github_token.value
 }
+
+provider "archive" {}
 
 terraform {
   required_version = ">=1"
@@ -27,7 +29,11 @@ terraform {
     }
     github = {
       source  = "integrations/github"
-      version = "~> 4.0"
+      version = "~> 4"
+    }
+    archive = {
+      source  = "hashicorp/archive"
+      version = "~> 2"
     }
   }
   backend "s3" {}

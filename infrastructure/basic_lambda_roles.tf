@@ -7,14 +7,14 @@ locals {
 }
 
 resource "aws_iam_role_policy_attachment" "basic_lambda" {
-  for_each = {for role in local.lambdas_roles_names: role => role}
+  for_each   = { for role in local.lambdas_roles_names : role => role }
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-  role = each.value
+  role       = each.value
 }
 resource "aws_iam_role_policy_attachment" "xray_lambda" {
-  for_each = {for role in local.lambdas_roles_names: role => role}
+  for_each   = { for role in local.lambdas_roles_names : role => role }
   policy_arn = "arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess"
-  role = each.value
+  role       = each.value
 }
 
 data "aws_iam_policy_document" "allow_lambda_assumerole" {

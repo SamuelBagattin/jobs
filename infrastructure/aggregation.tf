@@ -1,27 +1,30 @@
 data "archive_file" "aggregator" {
   type = "zip"
 
-  source_dir  = "${path.module}/hello-world"
-  output_path = "${path.module}/hello-world.zip"
+  source_dir  = "${path.root}/../out/aggregator"
+  output_path = "${path.root}/../out/zip/aggregator/hello-world.zip"
 }
 
 resource "aws_s3_object" "aggregator" {
   bucket = aws_s3_bucket.lambda_deployments.id
 
-  key    = "hello-world.zip"
+  key    = "aggregator.zip"
   source = data.archive_file.aggregator.output_path
 
   etag = filemd5(data.archive_file.aggregator.output_path)
 }
 
 resource "aws_lambda_function" "aggregator" {
-  function_name = local.aggregator_lambda_name
-  handler       = "Jobs.Aggregator.Local::Jobs.Aggregator.Local.Program::Main"
-  role          = aws_iam_role.aggregator_lambda.arn
-  runtime       = "dotnetcore3.1"
-  filename      = "Jobs.Aggregator.Local.zip"
-  timeout       = 90
-  memory_size   = 4096
+  function_name    = local.aggregator_lambda_name
+  handler          = "Jobs.Aggregator.Local::Jobs.Aggregator.Local.Program::Main"
+  role             = aws_iam_role.aggregator_lambda.arn
+  runtime          = "dotnet6"
+  architectures    = ["x86_64"]
+  s3_bucket        = aws_s3_object.aggregator.bucket
+  s3_key           = aws_s3_object.aggregator.key
+  source_code_hash = data.archive_file.aggregator.output_base64sha256
+  timeout          = 90
+  memory_size      = 4096
 
   environment {
     variables = {

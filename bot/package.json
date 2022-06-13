@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
+  "scripts": {
+    "local": "node local.js"
+  },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.17.0",
     "@aws-sdk/client-ssm": "^3.17.0",
