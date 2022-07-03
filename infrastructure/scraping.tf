@@ -1,20 +1,18 @@
-resource "aws_s3_bucket" "scraper_results" {
-  bucket = local.scraper_results_bucket_name
-  acl    = "private"
-  tags = {
-    Name    = local.scraper_results_bucket_name
-    Project = local.project_name
-  }
+module "scraper_results_s3_bucket" {
+  source                  = "./modules/s3_bucket"
+  bucket_name             = local.scraper_results_bucket_name
+  access_logs_bucket_name = module.access_logs_s3_bucket.bucket_name
 }
 
 resource "aws_cloudwatch_event_rule" "scraper_trigger" {
   name                = local.scraper_event_trigger_name
-  schedule_expression = "cron(0 6 * * ? *)"
+  schedule_expression = "cron(0 6 ? * FRI *)"
   tags = {
     Project : local.project_name
     Name : local.scraper_event_trigger_name
   }
 }
+
 
 resource "aws_cloudwatch_event_target" "scraper_target" {
   target_id = "${aws_iam_user.scraper.name}-target"
@@ -64,12 +62,12 @@ data "aws_iam_policy_document" "scraper_policy" {
       "s3:DeleteObject"
     ]
     effect    = "Allow"
-    resources = ["${aws_s3_bucket.scraper_results.arn}/*"]
+    resources = ["${module.scraper_results_s3_bucket.bucket_arn}/*"]
   }
   statement {
     actions   = ["s3:ListBucket"]
     effect    = "Allow"
-    resources = [aws_s3_bucket.scraper_results.arn]
+    resources = [module.scraper_results_s3_bucket.bucket_arn]
   }
   statement {
     actions   = ["ssm:GetParameter"]

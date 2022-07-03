@@ -1,6 +1,6 @@
 resource "aws_cloudfront_distribution" "s3_distribution" {
   origin {
-    domain_name = aws_s3_bucket.aggregated_results.bucket_regional_domain_name
+    domain_name = module.aggregated_results_s3_bucket.bucket_regional_domain_name
     origin_id   = local.website_origin_id
 
     s3_origin_config {
@@ -42,17 +42,12 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
 
   price_class = "PriceClass_100"
 
+  wait_for_deployment = true
+
   restrictions {
     geo_restriction {
       restriction_type = "whitelist"
       locations        = ["FR"]
     }
-  }
-
-  wait_for_deployment = false
-
-
-  tags = {
-    Project = local.project_name
   }
 }

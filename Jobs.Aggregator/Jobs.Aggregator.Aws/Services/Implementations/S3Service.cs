@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Amazon.S3;
 using Amazon.S3.Model;
@@ -23,7 +25,22 @@ namespace Jobs.Aggregator.Aws.Services.Implementations
 
         public async Task<IEnumerable<string>> ListObjectsKeysAsync(string bucketName)
         {
-            return (await _s3Client.ListObjectsAsync(bucketName)).S3Objects.Select(e => e.Key);
+            string continuationToken = null;
+            var isTruncated = true;
+            var allObjects = new List<S3Object>();
+            do
+            {
+                _logger.LogInformation($"Retrieving keys from {bucketName}. ContinuationToken : {continuationToken}");
+                var res = await _s3Client.ListObjectsV2Async(new ListObjectsV2Request
+                {
+                    BucketName = bucketName,
+                    ContinuationToken = continuationToken,
+                });
+                continuationToken = res.NextContinuationToken;
+                allObjects.AddRange(res.S3Objects);
+                isTruncated = res.IsTruncated;
+            } while (isTruncated);
+            return allObjects.Select(e => e.Key);
         }
 
         public async Task PutJsonObjectAsync(string bucketName, string key, string body)
@@ -68,19 +85,16 @@ namespace Jobs.Aggregator.Aws.Services.Implementations
                 using GetObjectResponse response = await _s3Client.GetObjectAsync(request);
                 await using var responseStream = response.ResponseStream;
                 using var reader = new StreamReader(responseStream);
-                var contentType = response.Headers["Content-Type"];
-                _logger.LogInformation("Content type: {0}", contentType);
 
                 responseBody = await reader.ReadToEndAsync(); // Now you process the response body.
             }
-            catch (AmazonS3Exception e)
-            {
-                // If bucket or object does not exist
-                _logger.LogError("Error encountered ***. Message:'{0}' when reading object", e.Message);
-            }
             catch (Exception e)
             {
-                _logger.LogError("Unknown encountered on server. Message:'{0}' when reading object", e.Message);
+                _logger.LogError(JsonSerializer.Serialize(new
+                {
+                    Message = $"Error encountered ***. Message: {e.Message} when reading object", e.StackTrace
+                }));
+                throw;
             }
 
             return responseBody;

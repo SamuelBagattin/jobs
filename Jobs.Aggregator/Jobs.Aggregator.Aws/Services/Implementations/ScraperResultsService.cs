@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Jobs.Aggregator.Aws.Configuration;
 using Jobs.Aggregator.Aws.Services.Contracts;
@@ -26,12 +27,26 @@ namespace Jobs.Aggregator.Aws.Services.Implementations
         public async Task<IEnumerable<Job>> GetAllScrapedJobs()
         {
             var objectList = await _s3Service.ListObjectsKeysAsync(_iawsConfigurationService.SourceDataBucketName);
-            var test = objectList.Select(async e =>
+            var enumerable = objectList.ToList();
+            _logger.LogInformation("Number of files to download : {0}", enumerable.Count);
+            var semaphore = new SemaphoreSlim(100);
+            var test = enumerable.Select(async e =>
             {
-                var jsonData = await _s3Service.ReadObjectDataAsync(_iawsConfigurationService.SourceDataBucketName, e);
-                return JsonSerializer.Deserialize<Job[]>(jsonData);
+                await semaphore.WaitAsync();
+
+                try
+                {
+                    var jsonData =
+                        await _s3Service.ReadObjectDataAsync(_iawsConfigurationService.SourceDataBucketName, e);
+                    return JsonSerializer.Deserialize<Job[]>(jsonData);
+                }
+                finally
+                {
+                    semaphore.Release();
+                }
             });
             var truc = await Task.WhenAll(test);
+            _logger.LogInformation("Got the files");
             return truc.Where(e => e != null).SelectMany(e => e);
         }
     }

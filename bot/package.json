@@ -9,7 +9,6 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.17.0",
     "@aws-sdk/client-ssm": "^3.17.0",
-    "axios": "^0.21.1",
-    "discord.js": "^12.5.3"
+    "axios": "^0.21.1"
   }
 }

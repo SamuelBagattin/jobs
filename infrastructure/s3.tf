@@ -1,16 +1,14 @@
-resource "aws_s3_bucket" "aggregated_results" {
-  bucket = local.aggregator_results_bucket_name
-  acl    = "private"
-  tags = {
-    Name    = local.aggregator_results_bucket_name
-    Project = local.project_name
-  }
+module "aggregated_results_s3_bucket" {
+  source            = "./modules/s3_bucket"
+  bucket_name       = local.aggregator_results_bucket_name
+  bucket_policy     = data.aws_iam_policy_document.s3_aggregated_results_policy.json
+  set_bucket_policy = true
 }
 
-data "aws_iam_policy_document" "s3_policy" {
+data "aws_iam_policy_document" "s3_aggregated_results_policy" {
   statement {
     actions   = ["s3:GetObject"]
-    resources = ["${aws_s3_bucket.aggregated_results.arn}/*"]
+    resources = ["${module.aggregated_results_s3_bucket.bucket_arn}/*"]
 
     principals {
       type        = "AWS"
@@ -19,64 +17,37 @@ data "aws_iam_policy_document" "s3_policy" {
   }
 }
 
-resource "aws_s3_bucket_policy" "example" {
-  bucket = aws_s3_bucket.aggregated_results.id
-  policy = data.aws_iam_policy_document.s3_policy.json
-}
-
 resource "aws_cloudfront_origin_access_identity" "origin_access_identity" {
   comment = "Some comment"
 }
 
-resource "aws_s3_bucket" "lambda_deployments" {
-  bucket = local.lambda_deployments_bucket_name
-
-  tags = {
-    Name    = local.lambda_deployments_bucket_name
-    Project = local.project_name
-  }
+module "lambda_deployments_s3_bucket" {
+  source      = "./modules/s3_bucket"
+  bucket_name = local.lambda_deployments_bucket_name
 }
 
-resource "aws_s3_bucket_acl" "lambda_deployments" {
-  bucket = aws_s3_bucket.lambda_deployments.id
-  acl    = "private"
+module "access_logs_s3_bucket" {
+  source                  = "./modules/s3_bucket"
+  bucket_name             = "jobs-s3accesslogs-bucket"
+  objects_expiration_days = 30
+  bucket_policy           = data.aws_iam_policy_document.s3_bucket_policy.json
+  set_bucket_policy       = true
 }
 
-resource "aws_s3_bucket_versioning" "lambda_deployments" {
-  bucket = aws_s3_bucket.lambda_deployments.id
-  versioning_configuration {
-    status = "Disabled"
-  }
-}
-
-resource "aws_s3_bucket_server_side_encryption_configuration" "lambda_deployments" {
-  bucket = aws_s3_bucket.lambda_deployments.id
-
-  rule {
-    apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
+data "aws_iam_policy_document" "s3_bucket_policy" {
+  statement {
+    sid    = "S3ServerAccessLogsPolicy"
+    effect = "Allow"
+    principals {
+      identifiers = ["logging.s3.amazonaws.com"]
+      type        = "Service"
     }
-  }
-}
-
-
-resource "aws_s3_bucket_lifecycle_configuration" "lambda_deployments" {
-  bucket = aws_s3_bucket.lambda_deployments.id
-
-  rule {
-    id     = "${aws_s3_bucket.lambda_deployments.bucket}-lifecycle-rule"
-    status = "Enabled"
-    abort_incomplete_multipart_upload {
-      days_after_initiation = 7
+    actions   = ["s3:PutObject"]
+    resources = ["${module.access_logs_s3_bucket.bucket_arn}/*"]
+    condition {
+      test     = "StringEquals"
+      values   = [data.aws_caller_identity.identity.account_id]
+      variable = "aws:SourceAccount"
     }
-  }
-}
-
-
-resource "aws_s3_bucket_ownership_controls" "s3_bucket" {
-  bucket = aws_s3_bucket.lambda_deployments.id
-
-  rule {
-    object_ownership = "BucketOwnerPreferred"
   }
 }

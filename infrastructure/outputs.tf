@@ -1,15 +1,15 @@
 output "scraper_results_bucket_arn" {
-  value       = aws_s3_bucket.scraper_results.arn
+  value       = module.scraper_results_s3_bucket.bucket_arn
   description = "The ARN of the S3 bucket that stores the scraper results"
 
 }
 output "aggregator_results_bucket_arn" {
-  value       = aws_s3_bucket.aggregated_results.arn
+  value       = module.aggregated_results_s3_bucket.bucket_arn
   description = "The ARN of the S3 bucket that stores the aggregated results"
 }
 
 output "scraper_results_bucket_name" {
-  value       = aws_s3_bucket.scraper_results.bucket
+  value       = module.scraper_results_s3_bucket.bucket_name
   description = "The name of the S3 bucket that stores the scraper results"
 }
 

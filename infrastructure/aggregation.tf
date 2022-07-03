@@ -6,7 +6,7 @@ data "archive_file" "aggregator" {
 }
 
 resource "aws_s3_object" "aggregator" {
-  bucket = aws_s3_bucket.lambda_deployments.id
+  bucket = module.lambda_deployments_s3_bucket.bucket_name
 
   key    = "aggregator.zip"
   source = data.archive_file.aggregator.output_path
@@ -23,14 +23,14 @@ resource "aws_lambda_function" "aggregator" {
   s3_bucket        = aws_s3_object.aggregator.bucket
   s3_key           = aws_s3_object.aggregator.key
   source_code_hash = data.archive_file.aggregator.output_base64sha256
-  timeout          = 90
+  timeout          = 900
   memory_size      = 4096
 
   environment {
     variables = {
       ON_LAMBDA : true
-      SOURCE_DATA_BUCKET_NAME : aws_s3_bucket.scraper_results.bucket
-      DESTINATION_DATA_BUCKET_NAME : aws_s3_bucket.aggregated_results.bucket
+      SOURCE_DATA_BUCKET_NAME : module.scraper_results_s3_bucket.bucket_name
+      DESTINATION_DATA_BUCKET_NAME : module.aggregated_results_s3_bucket.bucket_name
       DESTINATION_DATA_DISTRIBUTION_ID : aws_cloudfront_distribution.s3_distribution.id
       NEWJOBS_BUCKET_NAME : aws_s3_bucket.new_jobs.bucket
     }
@@ -72,17 +72,17 @@ data "aws_iam_policy_document" "aggregator_policy" {
   statement {
     actions   = ["s3:GetObject"]
     effect    = "Allow"
-    resources = ["${aws_s3_bucket.scraper_results.arn}/*"]
+    resources = ["${module.scraper_results_s3_bucket.bucket_arn}/*"]
   }
   statement {
     actions   = ["s3:PutObject", "s3:GetObject"]
     effect    = "Allow"
-    resources = ["${aws_s3_bucket.aggregated_results.arn}/*"]
+    resources = ["${module.aggregated_results_s3_bucket.bucket_arn}/*"]
   }
   statement {
     actions   = ["s3:ListBucket"]
     effect    = "Allow"
-    resources = [aws_s3_bucket.scraper_results.arn]
+    resources = [module.scraper_results_s3_bucket.bucket_arn]
   }
   statement {
     actions   = ["sqs:ReceiveMessage", "sqs:DeleteMessage", "sqs:GetQueueAttributes"]
@@ -104,6 +104,7 @@ data "aws_iam_policy_document" "aggregator_policy" {
 resource "aws_lambda_event_source_mapping" "aggregator_sqs_trigger" {
   event_source_arn = aws_sqs_queue.aggregator_trigger.arn
   function_name    = aws_lambda_function.aggregator.arn
+  batch_size       = 1
 }
 
 

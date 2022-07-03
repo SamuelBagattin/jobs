@@ -6,6 +6,11 @@ data "aws_ssm_parameter" "github_token" {
 provider "aws" {
   region  = "eu-west-3"
   profile = "samuel"
+  default_tags {
+    tags = {
+      Project : "jobs"
+    }
+  }
 }
 
 provider "aws" {

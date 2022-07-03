@@ -6,7 +6,7 @@ data "archive_file" "bot" {
 }
 
 resource "aws_s3_object" "bot" {
-  bucket = aws_s3_bucket.lambda_deployments.id
+  bucket = module.lambda_deployments_s3_bucket.bucket_name
 
   key    = "bot.zip"
   source = data.archive_file.bot.output_path

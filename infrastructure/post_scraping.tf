@@ -31,12 +31,22 @@ data "aws_iam_policy_document" "sns_assumerole" {
 
 resource "aws_sqs_queue" "aggregator_trigger" {
   name                       = local.aggregator_trigger_sqs_queue_name
-  visibility_timeout_seconds = 90
+  visibility_timeout_seconds = 10000
+  message_retention_seconds  = 24 * 60 * 60
+  redrive_policy = jsonencode({
+    deadLetterTargetArn = aws_sqs_queue.aggregator_trigger_dead_letter.arn
+    maxReceiveCount     = 3
+  })
   tags = {
-    Project : local.project_name
     Name : local.aggregator_trigger_sqs_queue_name
   }
 
+}
+
+resource "aws_sqs_queue" "aggregator_trigger_dead_letter" {
+  name                       = local.aggregator_trigger_dlq_sqs_queue_name
+  visibility_timeout_seconds = 10000
+  message_retention_seconds  = 7 * 24 * 60 * 60
 }
 
 resource "aws_sqs_queue" "scraping_publisher_trigger" {
@@ -47,6 +57,16 @@ resource "aws_sqs_queue" "scraping_publisher_trigger" {
     Name : local.scraping_publisher_sqs_queue_name
   }
 
+}
+
+resource "aws_sqs_queue" "scraping_publisher_trigger_dead_letter" {
+  name                       = local.scraping_publisher_sqs_dlq_queue_name
+  visibility_timeout_seconds = 10000
+  message_retention_seconds  = 7 * 24 * 60 * 60
+  redrive_policy = jsonencode({
+    deadLetterTargetArn = aws_sqs_queue.scraping_publisher_trigger.arn
+    maxReceiveCount     = 3
+  })
 }
 
 resource "aws_sqs_queue_policy" "aggregator_trigger" {
