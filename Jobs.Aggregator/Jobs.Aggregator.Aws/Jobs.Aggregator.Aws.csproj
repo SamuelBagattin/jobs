@@ -5,10 +5,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="AWSSDK.CloudFront" Version="3.7.6.18" />
-      <PackageReference Include="AWSSDK.S3" Version="3.7.9.20" />
+      <PackageReference Include="AWSSDK.CloudFront" Version="3.7.8.19" />
+      <PackageReference Include="AWSSDK.S3" Version="3.7.9.60" />
+      <PackageReference Include="AWSSDK.SSO" Version="3.7.0.214" />
+      <PackageReference Include="AWSSDK.SSOOIDC" Version="3.7.1.17" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
-      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.1" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.2" />
       <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
     </ItemGroup>
 

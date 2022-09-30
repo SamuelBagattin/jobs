@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Jobs.Aggregator.Aws.Configuration;
 using Jobs.Aggregator.Aws.Services.Contracts;
@@ -18,9 +20,18 @@ namespace Jobs.Aggregator.Aws.Services.Implementations
             _awsConfigurationService = awsConfigurationService;
         }
 
-        public Task UploadNewJobs(List<FinalCompany> newJobs)
+        public Task UploadNewJobs(List<FinalCompany> newJobs, CancellationToken cancellationToken)
         {
-            return _s3Service.PutJsonObjectAsync(_awsConfigurationService.NewJobsBucketName, "index", JsonSerializer.Serialize(newJobs));
+            if (_awsConfigurationService.UploadResults)
+                return _s3Service.PutJsonObjectAsync(_awsConfigurationService.NewJobsBucketName, "index", JsonSerializer.Serialize(newJobs), cancellationToken);
+            
+            if (!_awsConfigurationService.WriteResultsToLocal) return Task.CompletedTask;
+            
+            Directory.CreateDirectory(_awsConfigurationService.LocalNewJobsResultsPath);
+            return File.WriteAllTextAsync(
+                $"{Path.Combine(_awsConfigurationService.LocalNewJobsResultsPath, "newjobs_index.json")}",
+                JsonSerializer.Serialize(newJobs), cancellationToken);
+
         }
     }
 }

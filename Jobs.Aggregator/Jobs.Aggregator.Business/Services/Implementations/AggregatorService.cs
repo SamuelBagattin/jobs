@@ -1,177 +1,155 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Jobs.Aggregator.Aws.Configuration;
 using Jobs.Aggregator.Aws.Services.Contracts;
 using Jobs.Aggregator.Core.FinalModels;
 using Jobs.Aggregator.Core.Services.Contracts;
 using Jobs.Aggregator.Core.TransitionModels;
-using Jobs.Aggregator.Utils;
 using Microsoft.Extensions.Logging;
 
-namespace Jobs.Aggregator.Core.Services.Implementations
+namespace Jobs.Aggregator.Core.Services.Implementations;
+
+public class AggregatorService : IAggregatorService
 {
-    public class AggregatorService : IAggregatorService
+    private readonly ILogger<AggregatorService> _logger;
+    private readonly IScraperResultsService _scraperResultsService;
+    private readonly ITechnologiesService _technologiesService;
+    private readonly IAggregatorResultsService _aggregatorResultsService;
+    private readonly IAwsConfigurationService _awsConfigurationService;
+    private readonly IIdService _idService;
+    private readonly INewJobsResultsService _newJobsResultsService;
+    private readonly INewJobsService _newJobsService;
+
+    public AggregatorService(
+        IScraperResultsService scraperResultsService,
+        ITechnologiesService technologiesService,
+        ILogger<AggregatorService> logger, IAggregatorResultsService aggregatorResultsService,
+        IAwsConfigurationService awsConfigurationService, IIdService idService,
+        INewJobsResultsService newJobsResultsService, INewJobsService newJobsService)
     {
-        private readonly ILogger<AggregatorService> _logger;
-        private readonly IScraperResultsService _scraperResultsService;
-        private readonly ITechnologiesService _technologiesService;
-        private readonly IAggregatorResultsService _aggregatorResultsService;
-        private readonly IAwsConfigurationService _awsConfigurationService;
-        private readonly ITechnologiesAggregatorService _technologiesAggregatorService;
-        private readonly IIdService _idService;
-        private readonly INewJobsResultsService _newJobsResultsService;
-        private readonly INewJobsService _newJobsService;
+        _aggregatorResultsService = aggregatorResultsService;
+        _awsConfigurationService = awsConfigurationService;
+        _idService = idService;
+        _newJobsResultsService = newJobsResultsService;
+        _newJobsService = newJobsService;
+        (_scraperResultsService, _technologiesService, _logger) =
+            (scraperResultsService, technologiesService, logger);
+    }
 
-        public AggregatorService(
-            IScraperResultsService scraperResultsService,
-            ITechnologiesService technologiesService,
-            ILogger<AggregatorService> logger, IAggregatorResultsService aggregatorResultsService,
-            IAwsConfigurationService awsConfigurationService,
-            ITechnologiesAggregatorService technologiesAggregatorService, IIdService idService,
-            INewJobsResultsService newJobsResultsService, INewJobsService newJobsService)
+    public async Task Aggregate(CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Aggregating jobs");
+
+        var stopwatch = new Stopwatch();
+        stopwatch.Start();
+
+        var scrapedJobs = (await _scraperResultsService.GetAllScrapedJobs(cancellationToken)).ToArray();
+        stopwatch.Stop();
+        _logger.LogInformation("GetAllScrapedJobs : {} seconds", stopwatch.Elapsed.TotalSeconds);
+
+        stopwatch.Reset();
+        stopwatch.Start();
+
+        var deduplicatedJobs = scrapedJobs.DistinctBy(e => e.Url);
+
+        stopwatch.Stop();
+        _logger.LogInformation("deduplication : {} seconds", stopwatch.Elapsed.TotalSeconds);
+
+        stopwatch.Reset();
+        stopwatch.Start();
+        var jobsWithAnalysedTechnologies = deduplicatedJobs.Select(j => new JobByTechnoWithCompany
         {
-            _aggregatorResultsService = aggregatorResultsService;
-            _awsConfigurationService = awsConfigurationService;
-            _technologiesAggregatorService = technologiesAggregatorService;
-            _idService = idService;
-            _newJobsResultsService = newJobsResultsService;
-            _newJobsService = newJobsService;
-            (_scraperResultsService, _technologiesService, _logger) =
-                (scraperResultsService, technologiesService, logger);
-        }
+            Company = j.Company,
+            MainTechnologies = _technologiesService.GetTechnologies(j.Title).ToHashSet(),
+            SecondaryTechnologies = _technologiesService.GetTechnologies(j.Description).ToHashSet(),
+            Url = j.Url,
+            Site = j.Site,
+            Title = j.Title
+        }).Where(_technologiesService.isItJob);
+        stopwatch.Stop();
+        _logger.LogInformation("jobsWithAnalysedTechnologies : {} seconds", stopwatch.Elapsed.TotalSeconds);
+        stopwatch.Reset();
+        stopwatch.Start();
 
-        public async Task Aggregate()
+
+        //var aggregated = jobsWithAnalysedTechnologies.Aggregate(new Dictionary<string, AggregatedCompany>(), AggregateCompaniesAndJobs);
+
+        var aggregated = jobsWithAnalysedTechnologies.AsParallel().GroupBy(e => e.Company, (key, jobs) =>
         {
-            _logger.LogInformation("Aggregating jobs");
-
-            var scrapedJobs = await _scraperResultsService.GetAllScrapedJobs();
-            var res = scrapedJobs.Select(j => new JobByTechnoWithCompany
-                {
-                    Company = j.Company,
-                    MainTechnologies = _technologiesService.GetTechnologies(j.Title).ToHashSet(),
-                    SecondaryTechnologies = _technologiesService.GetTechnologies(j.Description).ToHashSet(),
-                    Url = j.Url,
-                    Site = j.Site,
-                    Title = j.Title
-                }).Aggregate(new Dictionary<string, AggregatedCompany>(),
-                    (acc, job) => { return AggregateCompaniesAndJobs(acc, job); }, list => list.Select(e => e.Value))
-                .Where(e => e.SecondaryTechnologies.Count != 0 || e.MainTechnologies.Count != 0).ToHashSet();
-
-            var res2 = new ResponseRoot
+            var jobsByTitle = jobs.GroupBy(e => e.Title);
+            var finalJobs = jobsByTitle.Select(e =>
             {
-                Companies = new CompanyResponse
+                var allJobPostings = e.Select(f => new FinalSite
                 {
-                    Companies = GetFinalCompanies(res)
-                },
-                Technologies = new TechnologiesResponse
+                    JobUrl = f.Url,
+                    SiteName = f.Site
+                }).ToArray();
+                return new FinalJob
                 {
-                    Technologies = _technologiesAggregatorService.GetTechnologiesStatistics(res)
-                }
+                    Id = _idService.GetJobId(key, e.Key).ToString(),
+                    Statistics = new JobStatistics
+                    {
+                        Occurences = allJobPostings.Length,
+                    },
+                    Site = allJobPostings.GroupBy(f => f.SiteName).Select(f => f.Last()),
+                    JobTitle = e.Key,
+                    MainTechnologies = e.SelectMany(f => f.MainTechnologies).Distinct()
+                        .Select(_technologiesService.GetTechnologyName),
+                    SecondaryTechnologies = e.SelectMany(f => f.MainTechnologies).Distinct()
+                        .Select(_technologiesService.GetTechnologyName)
+                };
+            }).ToArray();
+            return new FinalCompany
+            {
+                Id = string.Join("",key.Select(e => char.IsLetterOrDigit(e) || new[]{'!','-','_','.','*','\'','(',')'}.Contains(e) ? e : '-')).Trim('-').Replace("---", "-").Replace("--","-").ToLower(),
+                CompanyName = key,
+                MainTechnologies = finalJobs.SelectMany(e => e.MainTechnologies).Distinct(),
+                SecondaryTechnologies = finalJobs.SelectMany(e => e.SecondaryTechnologies).Distinct(),
+                Jobs = finalJobs
             };
-            if (_awsConfigurationService.WriteResultsToLocal)
-            {
-                File.Create("../../../../index.json").Close();
-                await File.WriteAllTextAsync("../../../../index.json", JsonSerializer.Serialize(res2));
-            }
+        }).ToArray();
 
-            var previousJobs = await _aggregatorResultsService.GetLastUploadedAggregatedJobs();
-            var newJobs = _newJobsService.GetNewJobs(previousJobs, res2);
-            if (_awsConfigurationService.UploadResults)
-            {
-                await _newJobsResultsService.UploadNewJobs(newJobs);
-                await _aggregatorResultsService.UploadAggregatedJobs(res2);
-            }
+        stopwatch.Stop();
+        _logger.LogInformation("aggregated : {} seconds", stopwatch.Elapsed.TotalSeconds);
 
-            ;
-        }
 
-        private Dictionary<string, AggregatedCompany> AggregateCompaniesAndJobs(
-            Dictionary<string, AggregatedCompany> acc, JobByTechnoWithCompany job)
+        stopwatch.Reset();
+        stopwatch.Start();
+        var res2 = new ResponseRoot
         {
-            // If company does not exists and if current job contains technologies
-            if (!acc.ContainsKey(job.Company))
+            Companies = new CompanyResponse
             {
-                if (_technologiesService.isItJob(job))
-                    acc[job.Company] = new AggregatedCompany
-                    {
-                        Company = job.Company,
-                        Jobs = new Dictionary<string, JobByTechno>
-                        {
-                            {
-                                job.Title,
-                                new JobByTechno
-                                {
-                                    Id = _idService.GetJobId(job.Company, job.Title).ToString(),
-                                    SitesWithUrls = new Dictionary<string, string> {{job.Site, job.Url}},
-                                    MainTechnologies = job.MainTechnologies,
-                                    SecondaryTechnologies = job.SecondaryTechnologies,
-                                    Title = job.Title
-                                }
-                            }
-                        }
-                    };
-            }
-            else
-            {
-                // If company already contains the job
-                if (acc[job.Company].Jobs.ContainsKey(job.Title))
-                {
-                    foreach (var techno in job.MainTechnologies)
-                        acc[job.Company].Jobs[job.Title].MainTechnologies.Add(techno);
-
-                    foreach (var techno in job.SecondaryTechnologies)
-                        acc[job.Company].Jobs[job.Title].SecondaryTechnologies.Add(techno);
-
-                    if (!acc[job.Company].Jobs[job.Title].SitesWithUrls.ContainsKey(job.Site))
-                        acc[job.Company].Jobs[job.Title].SitesWithUrls[job.Site] = job.Url;
-                }
-                // If company does not contains the job, and if job has technologies
-                else if (_technologiesService.isItJob(job))
-                {
-                    acc[job.Company].Jobs[job.Title] = new JobByTechno
-                    {
-                        Id = _idService.GetJobId(job.Company, job.Title).ToString(),
-                        MainTechnologies = job.MainTechnologies,
-                        SecondaryTechnologies = job.SecondaryTechnologies,
-                        Title = job.Title,
-                        SitesWithUrls = new Dictionary<string, string>
-                        {
-                            {job.Site, job.Url}
-                        }
-                    };
-                }
-            }
-
-            return acc;
-        }
-
-        private IEnumerable<FinalCompany> GetFinalCompanies(HashSet<AggregatedCompany> res)
+                Companies = aggregated
+            },
+            // Technologies = new TechnologiesResponse
+            // {
+            //     Technologies = _technologiesAggregatorService.GetTechnologiesStatistics(aggregated)
+            // }
+        };
+        if (_awsConfigurationService.WriteResultsToLocal)
         {
-            return res.Select(e => new FinalCompany
-            {
-                Id = e.Id,
-                CompanyName = e.Company,
-                MainTechnologies = e.MainTechnologies.Select(_technologiesService.GetTechnologyName),
-                SecondaryTechnologies = e.SecondaryTechnologies.Select(_technologiesService.GetTechnologyName),
-                Jobs = e.Jobs.Select(job => new FinalJob
-                {
-                    JobTitle = job.Value.Title,
-                    Id = job.Value.Id,
-                    MainTechnologies =
-                        job.Value.MainTechnologies.Select(_technologiesService.GetTechnologyName),
-                    SecondaryTechnologies =
-                        job.Value.SecondaryTechnologies.Select(_technologiesService.GetTechnologyName),
-                    Site = job.Value.SitesWithUrls.Select(site => new FinalSite
-                    {
-                        JobUrl = site.Value,
-                        SiteName = site.Key
-                    })
-                })
-            });
+            File.Create("../../../../index.json").Close();
+            await File.WriteAllTextAsync("../../../../index.json", JsonSerializer.Serialize(res2), cancellationToken);
         }
+
+        stopwatch.Stop();
+        _logger.LogInformation("statistics and serialization : {} seconds", stopwatch.Elapsed.TotalSeconds);
+        stopwatch.Reset();
+        stopwatch.Start();
+
+        var previousJobs = await _aggregatorResultsService.GetLastUploadedAggregatedJobs(cancellationToken);
+        var newJobs = _newJobsService.GetNewJobs(previousJobs, res2);
+        await _newJobsResultsService.UploadNewJobs(newJobs, cancellationToken);
+
+        await _aggregatorResultsService.UploadAggregatedJobs(res2, cancellationToken);
+
+        stopwatch.Stop();
+        _logger.LogInformation("upload : {} seconds", stopwatch.Elapsed.TotalSeconds);
+        stopwatch.Reset();
+        stopwatch.Start();
     }
 }

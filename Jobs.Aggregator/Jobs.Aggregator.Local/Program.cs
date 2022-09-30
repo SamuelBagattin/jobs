@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Amazon.CloudFront;
 using Amazon.S3;
 using Jobs.Aggregator.Aws.Configuration;
@@ -12,13 +14,20 @@ using Microsoft.Extensions.Hosting;
 
 namespace Jobs.Aggregator.Local
 {
-    internal static class Program
+    public static class Program
     {
-        private static async Task Main()
+        public static async Task Main()
         {
+            var cts = new CancellationTokenSource();
+            Console.CancelKeyPress += (s, e) =>
+            {
+                Console.WriteLine("Canceling...");
+                cts.Cancel();
+                e.Cancel = true;
+            };
             using var host = CreateHostBuilder().Build();
-            await host.StartAsync();
-            await host.Services.GetRequiredService<IAggregatorService>().Aggregate();
+            await host.StartAsync(cts.Token);
+            await host.Services.GetRequiredService<IAggregatorService>().Aggregate(cts.Token);
         }
 
         private static IHostBuilder CreateHostBuilder()

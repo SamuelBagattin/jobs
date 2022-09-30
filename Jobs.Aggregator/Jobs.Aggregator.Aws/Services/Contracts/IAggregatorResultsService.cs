@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 using Jobs.Aggregator.Core.FinalModels;
 
@@ -5,8 +6,8 @@ namespace Jobs.Aggregator.Aws.Services.Contracts
 {
     public interface IAggregatorResultsService
     {
-        Task UploadAggregatedJobs(ResponseRoot body);
+        Task UploadAggregatedJobs(ResponseRoot body, CancellationToken cancellationToken);
 
-        Task<ResponseRoot> GetLastUploadedAggregatedJobs();
+        Task<ResponseRoot> GetLastUploadedAggregatedJobs(CancellationToken cancellationToken);
     }
 }
