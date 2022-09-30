@@ -8,7 +8,7 @@ module "aggregated_results_s3_bucket" {
 data "aws_iam_policy_document" "s3_aggregated_results_policy" {
   statement {
     actions   = ["s3:GetObject"]
-    resources = ["${module.aggregated_results_s3_bucket.bucket_arn}/*"]
+    resources = ["${module.aggregated_results_s3_bucket.bucket_arn}/**"]
 
     principals {
       type        = "AWS"

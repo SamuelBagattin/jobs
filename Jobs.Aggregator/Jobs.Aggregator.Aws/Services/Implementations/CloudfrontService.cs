@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Amazon.CloudFront;
 using Amazon.CloudFront.Model;
@@ -19,9 +21,10 @@ namespace Jobs.Aggregator.Aws.Services.Implementations
             _logger = logger;
         }
 
-        public async Task CreateInvalidationByPath(string distributionId, string path)
+        public async Task CreateInvalidationByPath(string distributionId, IEnumerable<string> paths, CancellationToken cancellationToken)
         {
-            _logger.LogInformation($"Creating invalidation for {distributionId}: {path}");
+            var enumerable = paths.ToList();
+            _logger.LogInformation($"Creating invalidation for {distributionId}: {string.Join(", ", enumerable)}");
             var invalidationRequest = new CreateInvalidationRequest
             {
                 DistributionId = distributionId,
@@ -29,13 +32,13 @@ namespace Jobs.Aggregator.Aws.Services.Implementations
                 {
                     Paths = new Paths
                     {
-                        Items = new List<string>{path},
-                        Quantity = 1
+                        Items = enumerable.ToList(),
+                        Quantity = enumerable.Count
                     },
                     CallerReference = DateTime.Now.ToString("yyyyMMddHHmmssffff")
                 }
             };
-            await _amazonCloudFront.CreateInvalidationAsync(invalidationRequest);
+            await _amazonCloudFront.CreateInvalidationAsync(invalidationRequest, cancellationToken);
         }
     }
 }

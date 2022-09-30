@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "querier"
+version = "0.1.0"
+description = ""
+authors = ["Samuel Bagattin <42091952+SamuelBagattin@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+
+
+[tool.poetry.group.dev.dependencies]
+aws-lambda-powertools = "^1.29.2"
+boto3 = "^1.24.80"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

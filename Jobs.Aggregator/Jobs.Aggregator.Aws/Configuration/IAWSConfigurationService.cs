@@ -8,7 +8,8 @@ namespace Jobs.Aggregator.Aws.Configuration
         string DestinationCloudfrontDistributionId { get; }
         string NewJobsBucketName { get; }
         bool UploadResults { get; }
-
         bool WriteResultsToLocal { get; }
+        string LocalResultsPath { get; }
+        string LocalNewJobsResultsPath { get; }
     }
 }

@@ -12,5 +12,7 @@ namespace Jobs.Aggregator.Core.FinalModels
         public IEnumerable<FinalSite> Site { get; set; }
 
         public string JobTitle { get; set; }
+        
+        public JobStatistics Statistics { get; set; }
     }
 }

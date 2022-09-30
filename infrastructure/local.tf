@@ -38,5 +38,11 @@ locals {
   website_distribution_name = "${local.project_name}-website-distribution"
   website_origin_id         = "${local.project_name}-website-origin"
 
+  #  querier_lambda_name                   = "${local.project_name}-querier-lambda"
+  #  querier_lambda_role_name              = "${local.project_name}-querier-lambda-role"
+  #  querier_api_gateway_name              = "${local.project_name}-querier-apigateway"
+  #  querier_lambda_policy_attachment_name = "${local.project_name}-querierlambda-policyattachment"
+  #  querier_iam_policy_name               = "${local.project_name}-querierlambda-policy"
+
   githubactions_jobs_iam_role_name = "githubActions-jobs-role"
 }

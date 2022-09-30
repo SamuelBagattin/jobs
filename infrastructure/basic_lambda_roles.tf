@@ -2,7 +2,8 @@ locals {
   lambdas_roles_names = [
     aws_iam_role.aggregator_lambda.name,
     aws_iam_role.bot_role.name,
-    aws_iam_role.scraper.name
+    aws_iam_role.scraper.name,
+    #    aws_iam_role.querier_role.name
   ]
 }
 

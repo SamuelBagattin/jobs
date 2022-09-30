@@ -11,6 +11,7 @@ DOTNET ?= $(shell which dotnet)
 GO ?= $(shell which go)
 YARN ?= $(shell which yarn)
 NPM ?= $(shell which npm)
+POETRY ?= $(shell which poetry)
 
 # dirs
 INFRA_DIR ?= $(abspath infrastructure)
@@ -18,6 +19,7 @@ FRONTEND_DIR ?= $(abspath frontend)
 AGGREGATOR_DIR ?= $(abspath Jobs.Aggregator)
 SCRAPER_DIR ?= $(abspath jobs_scraper)
 BOT_DIR ?= $(abspath bot)
+QUERIER_DIR ?= $(abspath querier)
 OUT_DIR ?= $(abspath out)
 
 # terraform
@@ -45,7 +47,7 @@ plan:
 	cd $(INFRA_DIR) && AWS_PROFILE=$(AWS_PROFILE) $(TERRAGRUNT) plan
 
 .PHONY: apply
-apply: lint build-frontend build-bot build-aggregator
+apply: init lint build-frontend build-bot build-aggregator
 	cd $(INFRA_DIR) && AWS_PROFILE=$(AWS_PROFILE) $(TERRAGRUNT) apply
 
 # lint
@@ -54,13 +56,13 @@ lint:
 	cd $(INFRA_DIR) && $(TERRAGRUNT) fmt -recursive
 	cd $(INFRA_DIR) && $(TERRAGRUNT) hclfmt
 	cd $(INFRA_DIR) && AWS_PROFILE=$(AWS_PROFILE) $(TERRAGRUNT) validate
-	cd $(INFRA_DIR) && $(TFLINT) --init -c ./tflint.hcl
-	cd $(INFRA_DIR) && $(TFLINT) -c ./tflint.hcl
+	cd $(INFRA_DIR) && AWS_PROFILE=$(AWS_PROFILE) $(TFLINT) --init -c ./tflint.hcl
+	cd $(INFRA_DIR) && AWS_PROFILE=$(AWS_PROFILE) $(TFLINT) -c ./tflint.hcl
 
 
 
 .PHONY: build
-build: build-aggregator build-bot build-frontend build-scraper
+build: build-aggregator build-bot build-frontend build-scraper build-querier
 
 .PHONY: build-aggregator
 build-aggregator:
@@ -88,6 +90,11 @@ run-bot-local:
 	TOKEN_SSM_PARAM_NAME=/jobs/discordbot/token \
 	PASTEEE_TOKEN_SSM_PARAM_NAME=/jobs/discordbot/pastee_token \
 	$(YARN) run local
+
+.PHONY: build-querier
+build-querier:
+	cd $(QUERIER_DIR) && rm -rf package dist
+	cd $(QUERIER_DIR) && $(POETRY) install && $(POETRY) build && $(POETRY) run pip install -t package dist/*.whl
 
 
 

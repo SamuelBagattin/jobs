@@ -1,4 +1,5 @@
 resource "aws_cloudfront_distribution" "s3_distribution" {
+  http_version = "http3"
   origin {
     domain_name = module.aggregated_results_s3_bucket.bucket_regional_domain_name
     origin_id   = local.website_origin_id
@@ -16,16 +17,15 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   aliases = [local.website_domain]
   viewer_certificate {
     acm_certificate_arn      = data.aws_acm_certificate.samuelbagattin.arn
-    minimum_protocol_version = "TLSv1.2_2019"
+    minimum_protocol_version = "TLSv1.2_2021"
     ssl_support_method       = "sni-only"
   }
 
   default_cache_behavior {
-    allowed_methods  = ["GET", "HEAD"]
-    cached_methods   = ["GET", "HEAD"]
+    allowed_methods  = ["GET", "HEAD", "OPTIONS"]
+    cached_methods   = ["GET", "HEAD", "OPTIONS"]
     target_origin_id = local.website_origin_id
     compress         = true
-
     forwarded_values {
       query_string = false
 
@@ -33,6 +33,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
         forward = "none"
       }
     }
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.s3.id
 
     viewer_protocol_policy = "redirect-to-https"
     min_ttl                = 0
@@ -48,6 +49,23 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     geo_restriction {
       restriction_type = "whitelist"
       locations        = ["FR"]
+    }
+  }
+}
+
+resource "aws_cloudfront_response_headers_policy" "s3" {
+  name = "s3"
+  cors_config {
+    access_control_allow_credentials = false
+    origin_override                  = false
+    access_control_allow_headers {
+      items = ["*"]
+    }
+    access_control_allow_methods {
+      items = ["GET", "HEAD", "OPTIONS"]
+    }
+    access_control_allow_origins {
+      items = ["*"]
     }
   }
 }

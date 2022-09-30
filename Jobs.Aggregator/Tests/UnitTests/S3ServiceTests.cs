@@ -38,7 +38,7 @@ namespace UnitTests
                 .Callback<PutObjectRequest, CancellationToken>((e, token) => { actual = e; });
 
             // Act
-            await _sut.PutJsonObjectAsync(bucketNameData, key, body);
+            await _sut.PutJsonObjectAsync(bucketNameData, key, body, default);
 
             // Assert
             _amazonS3Mock.Verify(e => e.PutObjectAsync(It.IsAny<PutObjectRequest>(), new CancellationToken()),

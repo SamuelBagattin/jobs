@@ -39,5 +39,7 @@ namespace Jobs.Aggregator.Aws.Configuration
         public bool UploadResults => OnLambda;
 
         public bool WriteResultsToLocal => !OnLambda;
+        public string LocalResultsPath => "/tmp/jobs_aggregation_results";
+        public string LocalNewJobsResultsPath => "/tmp/new_jobs_aggregation_results";
     }
 }
