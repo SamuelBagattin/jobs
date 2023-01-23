@@ -2,7 +2,7 @@ data "archive_file" "aggregator" {
   type = "zip"
 
   source_dir  = "${path.root}/../out/aggregator"
-  output_path = "${path.root}/../out/zip/aggregator/hello-world.zip"
+  output_path = "${path.root}/../out/zip/aggregator/aggregator.zip"
 }
 
 resource "aws_s3_object" "aggregator" {
@@ -19,7 +19,7 @@ resource "aws_lambda_function" "aggregator" {
   handler          = "Jobs.Aggregator.Local::Jobs.Aggregator.Local.Program::Main"
   role             = aws_iam_role.aggregator_lambda.arn
   runtime          = "dotnet6"
-  architectures    = ["x86_64"]
+  architectures    = ["arm64"]
   s3_bucket        = aws_s3_object.aggregator.bucket
   s3_key           = aws_s3_object.aggregator.key
   source_code_hash = data.archive_file.aggregator.output_base64sha256
@@ -41,7 +41,6 @@ resource "aws_lambda_function" "aggregator" {
   }
 
   tags = {
-    Project : local.project_name
     Name : local.aggregator_lambda_name
   }
 
@@ -51,7 +50,6 @@ resource "aws_iam_role" "aggregator_lambda" {
   assume_role_policy = data.aws_iam_policy_document.allow_lambda_assumerole.json
   name               = local.aggregator_iam_role_name
   tags = {
-    Project : local.project_name
     Name : local.aggregator_iam_role_name
   }
 }

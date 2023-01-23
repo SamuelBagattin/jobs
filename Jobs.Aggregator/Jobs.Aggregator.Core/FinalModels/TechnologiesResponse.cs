@@ -3,9 +3,8 @@ using System.Linq;
 
 namespace Jobs.Aggregator.Core.FinalModels
 {
-    public class TechnologiesResponse
+    public record TechnologiesResponse
     {
-        public IEnumerable<TechnologyStatistics> Technologies { get; set; }
-        public int TechnologiesCount => Technologies.Count();
+        public IEnumerable<Technology> Technologies { get; set; }
     }
 }

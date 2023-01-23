@@ -105,13 +105,14 @@ public class AggregatorService : IAggregatorService
             }).ToArray();
             return new FinalCompany
             {
-                Id = string.Join("",key.Select(e => char.IsLetterOrDigit(e) || new[]{'!','-','_','.','*','\'','(',')'}.Contains(e) ? e : '-')).Trim('-').Replace("---", "-").Replace("--","-").ToLower(),
+                Id = string.Join("",key.Select(e => char.IsLetterOrDigit(e) || new[]{'!','-','_','*','\'','(',')'}.Contains(e) ? e : '-')).Trim('-').Replace("---", "-").Replace("--","-").ToLower(),
                 CompanyName = key,
                 MainTechnologies = finalJobs.SelectMany(e => e.MainTechnologies).Distinct(),
                 SecondaryTechnologies = finalJobs.SelectMany(e => e.SecondaryTechnologies).Distinct(),
-                Jobs = finalJobs
+                Jobs = finalJobs,
+                JobCount = finalJobs.Length
             };
-        }).ToArray();
+        }).OrderBy(e => e.JobCount).ToArray();
 
         stopwatch.Stop();
         _logger.LogInformation("aggregated : {} seconds", stopwatch.Elapsed.TotalSeconds);
@@ -119,15 +120,17 @@ public class AggregatorService : IAggregatorService
 
         stopwatch.Reset();
         stopwatch.Start();
+
         var res2 = new ResponseRoot
         {
             Companies = new CompanyResponse
             {
-                Companies = aggregated
+                Companies = aggregated,
+                Count = aggregated.Length
             },
             // Technologies = new TechnologiesResponse
             // {
-            //     Technologies = _technologiesAggregatorService.GetTechnologiesStatistics(aggregated)
+            //     Technologies = 
             // }
         };
         if (_awsConfigurationService.WriteResultsToLocal)

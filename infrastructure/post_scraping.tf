@@ -5,7 +5,6 @@ resource "aws_sns_topic" "post_scraping" {
   application_failure_feedback_role_arn = aws_iam_role.sns_topic_feedback.arn
   application_success_feedback_role_arn = aws_iam_role.sns_topic_feedback.arn
   tags = {
-    Project : local.project_name
     Name : local.scraping_destination_sns_topic_name
   }
 }
@@ -53,7 +52,6 @@ resource "aws_sqs_queue" "scraping_publisher_trigger" {
   name                       = local.scraping_publisher_sqs_queue_name
   visibility_timeout_seconds = 5
   tags = {
-    Project : local.project_name
     Name : local.scraping_publisher_sqs_queue_name
   }
 

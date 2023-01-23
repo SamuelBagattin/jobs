@@ -8,7 +8,6 @@ resource "aws_cloudwatch_event_rule" "scraper_trigger" {
   name                = local.scraper_event_trigger_name
   schedule_expression = "cron(0 6 ? * FRI *)"
   tags = {
-    Project : local.project_name
     Name : local.scraper_event_trigger_name
   }
 }
@@ -24,7 +23,6 @@ resource "aws_iam_role" "scraper" {
   name               = local.scraper_iam_role_name
   assume_role_policy = data.aws_iam_policy_document.scraper_assume_role.json
   tags = {
-    Project : local.project_name
     Name : local.scraper_iam_role_name
   }
 }

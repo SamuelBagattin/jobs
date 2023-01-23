@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Jobs.Aggregator.Core.TransitionModels
 {
-    public class JobByTechnoWithCompany
+    public record JobByTechnoWithCompany
     {
         public HashSet<TechnologiesEnum> MainTechnologies { get; set; }
 

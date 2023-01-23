@@ -1,7 +1,6 @@
 resource "aws_s3_bucket" "new_jobs" {
   bucket = local.newjobs_history_bucket_name
   tags = {
-    Project : local.project_name
     Name : local.newjobs_history_bucket_name
   }
 }

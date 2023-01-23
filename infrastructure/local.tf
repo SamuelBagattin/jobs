@@ -25,6 +25,7 @@ locals {
   aggregator_policy_attachment_name     = "${local.project_name}-aggregator-policy-attachment"
   aggregator_trigger_sqs_queue_name     = "${local.project_name}-aggregator-trigger-sqs-queue"
   aggregator_trigger_dlq_sqs_queue_name = "${local.project_name}-aggregator-trigger-sqs-dlq"
+  aggregator_cloudfront_origin_id       = "${local.project_name}-aggregator-cloudfrontOrigin"
 
   newjobs_history_bucket_name = "${local.project_name}-newjobs-history"
 
@@ -36,7 +37,8 @@ locals {
   discord_bot_policy_attachment_name     = "${local.project_name}-discordbot-policy-attachment"
 
   website_distribution_name = "${local.project_name}-website-distribution"
-  website_origin_id         = "${local.project_name}-website-origin"
+  website_origin_id         = "${local.project_name}-website-cloudfrontOrigin"
+  website_bucket_name       = "${local.project_name}-website-bucket"
 
   #  querier_lambda_name                   = "${local.project_name}-querier-lambda"
   #  querier_lambda_role_name              = "${local.project_name}-querier-lambda-role"

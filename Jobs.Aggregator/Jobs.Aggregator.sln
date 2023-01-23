@@ -14,8 +14,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "Tests\UnitTest
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jobs.Aggregator.Utils", "Jobs.Aggregator.Utils\Jobs.Aggregator.Utils.csproj", "{34FECDC6-1908-4A11-A7F3-612C8F9B46C1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jobs.Aggregator.Benchmark", "Jobs.Aggregator.Benchmark\Jobs.Aggregator.Benchmark.csproj", "{0BE6EC64-AED0-4BC2-8971-A51492737AD9}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -46,10 +44,6 @@ Global
 		{34FECDC6-1908-4A11-A7F3-612C8F9B46C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{34FECDC6-1908-4A11-A7F3-612C8F9B46C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{34FECDC6-1908-4A11-A7F3-612C8F9B46C1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0BE6EC64-AED0-4BC2-8971-A51492737AD9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0BE6EC64-AED0-4BC2-8971-A51492737AD9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0BE6EC64-AED0-4BC2-8971-A51492737AD9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0BE6EC64-AED0-4BC2-8971-A51492737AD9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{089866BA-D72B-44B6-8F55-FCBF0271DD34} = {8C605BAB-7CFF-4A01-8CEB-910B65FEAF00}

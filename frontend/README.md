@@ -1,82 +1,129 @@
-# Qwik App ⚡️
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/26466516/141659551-d7ba5630-7200-46fe-863b-87818dae970a.png" alt="Next.js TypeScript Starter">
+</p>
 
-- [Qwik Docs](https://qwik.builder.io/)
-- [Discord](https://qwik.builder.io/chat)
-- [Qwik Github](https://github.com/BuilderIO/qwik)
-- [@QwikDev](https://twitter.com/QwikDev)
-- [Vite](https://vitejs.dev/)
-- [Partytown](https://partytown.builder.io/)
-- [Mitosis](https://github.com/BuilderIO/mitosis)
-- [Builder.io](https://www.builder.io/)
+<br />
 
----
+<div align="center"><strong>Non-opinionated TypeScript starter for Next.js</strong></div>
+<div align="center">Highly scalable foundation with the best DX. All the tools you need to build your next project.</div>
 
-## Project Structure
+<br />
 
-Inside of you project, you'll see the following directories and files:
+<div align="center">
+  <img src="https://img.shields.io/static/v1?label=PRs&message=welcome&style=flat-square&color=5e17eb&labelColor=000000" alt="PRs welcome!" />
 
-```
-├── public/
-│   └── ...
-└── src/
-    ├── components/
-    │   └── ...
-    └── routes/
-        └── ...
-```
+  <img alt="License" src="https://img.shields.io/github/license/jpedroschmitz/typescript-nextjs-starter?style=flat-square&color=5e17eb&labelColor=000000">
 
-- `src/routes`: Provides the directory based routing, which can include a hierarchy of `layout.tsx` layout files, and `index.tsx` files as the page. Additionally, `index.ts` files are endpoints. Please see the [routing docs](https://qwik.builder.io/qwikcity/routing/overview/) for more info.
+  <a href="https://twitter.com/intent/follow?screen_name=jpedroschmitz">
+    <img src="https://img.shields.io/twitter/follow/jpedroschmitz?style=flat-square&color=5e17eb&labelColor=000000" alt="Follow @jpedroschmitz" />
+  </a>
+</div>
 
-- `src/components`: Recommended directory for components.
+<div align="center">
+  <sub>Created by <a href="https://twitter.com/jpedroschmitz">João Pedro</a> with the help of many <a href="https://github.com/jpedroschmitz/typescript-nextjs-starter/graphs/contributors">wonderful contributors</a>.</sub>
+</div>
 
-- `public`: Any static assets, like images, can be placed in the public directory. Please see the [Vite public directory](https://vitejs.dev/guide/assets.html#the-public-directory) for more info.
+<br />
 
-## Add Integrations
+## Features
 
-Use the `npm run qwik add` command to add other integrations. Some examples of integrations include as a Cloudflare, Netlify or Vercel server, and the Static Site Generator (SSG).
+- ⚡️ Next.js 12
+- ⚛️ React 18
+- ⛑ TypeScript
+- 📏 ESLint — To find and fix problems in your code
+- 💖 Prettier — Code Formatter for consistent style
+- 🐶 Husky — For running scripts before committing
+- 🚓 Commitlint — To make sure your commit messages follow the convention
+- 🖌 Renovate — To keep your dependencies up to date
+- 🚫 lint-staged — Run ESLint and Prettier against staged Git files
+- 👷 PR Workflow — Run Type Check & Linters on Pull Requests
+- ⚙️ EditorConfig - Consistent coding styles across editors and IDEs
+- 🗂 Path Mapping — Import components or images using the `@` prefix
 
-```
-npm run qwik add
-```
+## Quick Start
 
-## Development
-
-Development mode uses [Vite's development server](https://vitejs.dev/). For Qwik during development, the `dev` command will also server-side render (SSR) the output. The client-side development modules loaded by the browser.
-
-```
-npm run dev
-```
-
-> Note: during dev mode, Vite will request many JS files, which does not represent a Qwik production build.
-
-## Preview
-
-The preview command will create a production build of the client modules, production build of `src/entry.preview.tsx`, and create a local server. The preview server is only for convenience to locally preview a production build, but it should not be used as a production server.
+The best way to start with this template is using [Create Next App](https://nextjs.org/docs/api-reference/create-next-app).
 
 ```
-npm run preview
+# yarn
+yarn create next-app -e https://github.com/jpedroschmitz/typescript-nextjs-starter
+# npm
+npx create-next-app -e https://github.com/jpedroschmitz/typescript-nextjs-starter
+# pnpm
+pnpm create next-app -e https://github.com/jpedroschmitz/typescript-nextjs-starter
 ```
 
-## Production
+### Development
 
-The production build should generate the client and server modules by running both client and server build commands. Additionally, the build command will use Typescript run a type check on the source.
+To start the project locally, run:
 
-```
-npm run build
-```
-
-## Express Server
-
-This app has a minimal [Express server](https://expressjs.com/) implementation. After running a full build, you can preview the build using the command:
-
-```
-npm run serve
+```bash
+pnpm dev
 ```
 
-Then visit [http://localhost:8080/](http://localhost:8080/)
+Open `http://localhost:3000` with your browser to see the result.
 
-## Static Site Generator (Node.js)
+## Testimonials
 
+> [**“This starter is by far the best TypeScript starter for Next.js. Feature packed but un-opinionated at the same time!”**](https://github.com/jpedroschmitz/typescript-nextjs-starter/issues/87#issue-789642190)<br>
+> — Arafat Zahan
+
+> [**“I can really recommend the Next.js Typescript Starter repo as a solid foundation for your future Next.js projects.”**](https://corfitz.medium.com/create-a-custom-create-next-project-command-2a6b35a1c8e6)<br>
+> — Corfitz
+
+> [**“Brilliant work!”**](https://github.com/jpedroschmitz/typescript-nextjs-starter/issues/87#issuecomment-769314539)<br>
+> — Soham Dasgupta
+
+## Showcase
+
+List of websites that started off with Next.js TypeScript Starter:
+
+- [dowhile.io](https://dowhile.io)
+- [hygraph.com](https://hygraph.com)
+- [mobg.com.br](https://mobg.com.br)
+- [nextlevelweek.com](https://nextlevelweek.com)
+- [rocketseat.com.br](https://www.rocketseat.com.br)
+- [unfork.vercel.app](https://unfork.vercel.app)
+- [Add yours](https://github.com/jpedroschmitz/typescript-nextjs-starter/edit/main/README.md)
+
+## Documentation
+
+### Requirements
+
+- Node.js >= 12.22.0
+- pnpm 7
+
+### Directory Structure
+
+- [`.github`](.github) — GitHub configuration including the CI workflow.<br>
+- [`.husky`](.husky) — Husky configuration and hooks.<br>
+- [`public`](./public) — Static assets such as robots.txt, images, and favicon.<br>
+- [`src`](./src) — Application source code, including pages, components, styles.
+
+### Scripts
+
+- `pnpm dev` — Starts the application in development mode at `http://localhost:3000`.
+- `pnpm build` — Creates an optimized production build of your application.
+- `pnpm start` — Starts the application in production mode.
+- `pnpm type-check` — Validate code using TypeScript compiler.
+- `pnpm lint` — Runs ESLint for all files in the `src` directory.
+- `pnpm format` — Runs Prettier for all files in the `src` directory.
+
+### Path Mapping
+
+TypeScript are pre-configured with custom path mappings. To import components or files, use the `@` prefix.
+
+```tsx
+import { Button } from '@/components/Button';
+
+// To import images or other files from the public folder
+import avatar from '@/public/avatar.png';
 ```
-npm run ssg
-```
+
+### Switch to Yarn/npm
+
+This starter uses pnpm by default, but this choice is yours. If you'd like to switch to Yarn/npm, delete the `pnpm-lock.yaml` file, install the dependencies with Yarn/npm, change the CI workflow, and Husky Git hooks to use Yarn/npm commands.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for more information.

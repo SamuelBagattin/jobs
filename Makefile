@@ -12,11 +12,12 @@ GO ?= $(shell which go)
 YARN ?= $(shell which yarn)
 NPM ?= $(shell which npm)
 POETRY ?= $(shell which poetry)
+DOCKER ?= $(shell which docker)
 
 # dirs
 INFRA_DIR ?= $(abspath infrastructure)
 FRONTEND_DIR ?= $(abspath frontend)
-AGGREGATOR_DIR ?= $(abspath Jobs.Aggregator)
+AGGREGATOR_DIR ?= $(abspath Jobs.Aggregator/Jobs.Aggregator.Local)
 SCRAPER_DIR ?= $(abspath jobs_scraper)
 BOT_DIR ?= $(abspath bot)
 QUERIER_DIR ?= $(abspath querier)
@@ -29,6 +30,7 @@ AWS_PROFILE ?= "samuel"
 .PHONY: install-tools
 install-tools:
 	$(BREW) bundle
+	$(DOTNET) tool update --global Amazon.Lambda.Tools
 
 .PHONY: login
 login:
@@ -47,7 +49,7 @@ plan:
 	cd $(INFRA_DIR) && AWS_PROFILE=$(AWS_PROFILE) $(TERRAGRUNT) plan
 
 .PHONY: apply
-apply: init lint build-frontend build-bot build-aggregator
+apply: init lint build-bot build-aggregator
 	cd $(INFRA_DIR) && AWS_PROFILE=$(AWS_PROFILE) $(TERRAGRUNT) apply
 
 # lint
@@ -66,7 +68,9 @@ build: build-aggregator build-bot build-frontend build-scraper build-querier
 
 .PHONY: build-aggregator
 build-aggregator:
-	cd $(AGGREGATOR_DIR) && $(DOTNET) build -c Release -o $(OUT_DIR)/aggregator
+	# Native AOT build does not work on Lambda "/var/task/bootstrap: /lib64/libm.so.6: version `GLIBC_2.29' not found (required by /var/task/bootstrap)"
+    #$(DOCKER) run --platform linux/amd64 --entrypoint sh -v $$(pwd):/application mcr.microsoft.com/dotnet/sdk:7.0 -c "apt update && apt install -y clang zip llvm zlib1g-dev && dotnet publish -r linux-x64 -c Release -o /application/out/aggregator /application/Jobs.Aggregator/Jobs.Aggregator.Local/Jobs.Aggregator.Local.csproj"
+	cd $(AGGREGATOR_DIR) && $(DOTNET) publish -c Release -r linux-arm64 --self-contained -o $(OUT_DIR)/aggregator/
 
 .PHONY: build-scraper
 build-scraper:
@@ -78,8 +82,8 @@ build-bot:
 
 .PHONY: build-frontend
 build-frontend:
-	cd $(FRONTEND_DIR) && $(YARN) install --frozen-lockfile --silent
-	cd $(FRONTEND_DIR) && $(YARN) --silent run build
+	cd $(FRONTEND_DIR) && $(NPM) install && $(NPM) run build && $(NPM) run export
+	cd $(FRONTEND_DIR)/infrastructure && $(NPM) install && $(NPM) run build
 
 
 .PHONY: run-bot-local

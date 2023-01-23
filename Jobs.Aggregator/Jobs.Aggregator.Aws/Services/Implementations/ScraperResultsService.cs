@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using Jobs.Aggregator.Aws.Configuration;
+using Jobs.Aggregator.Aws.Models;
 using Jobs.Aggregator.Aws.Services.Contracts;
 using Microsoft.Extensions.Logging;
 

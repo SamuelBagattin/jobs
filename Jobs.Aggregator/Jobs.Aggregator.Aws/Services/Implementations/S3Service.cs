@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.S3;
@@ -81,7 +80,7 @@ public class S3Service : IS3Service
     public async Task<string> ReadObjectDataAsync(string bucketName, string key,
         CancellationToken cancellationToken)
     {
-        var responseBody = "";
+        string responseBody;
         try
         {
             var request = new GetObjectRequest

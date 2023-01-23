@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace Jobs.Aggregator.Core.FinalModels
 {
-    public class TechnologyStatisticsCompany
+    public record TechnologyStatisticsCompany
     {
         public IEnumerable<string> Ids { get; set; }
 

@@ -4,7 +4,6 @@ resource "aws_sqs_queue" "scraper_trigger" {
   receive_wait_time_seconds  = 20
 
   tags = {
-    Project : local.project_name
     Name : local.scraper_trigger_sqs_queue_name
   }
 

@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Jobs.Aggregator.Core.TransitionModels
 {
-    public class AggregatedCompany
+    public record AggregatedCompany
     {
         public string Id { get; } = Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Substring(0, 8);
 

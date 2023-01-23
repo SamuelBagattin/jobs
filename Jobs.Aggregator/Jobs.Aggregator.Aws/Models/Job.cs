@@ -1,15 +1,15 @@
 using System;
 
-namespace Jobs.Aggregator.Aws
+namespace Jobs.Aggregator.Aws.Models
 {
-    public class Job
+    public record Job
     {
         public string Id { get; set; }
-        public string Title { get; set; }
-        public string Company { get; set; }
-        public string Site { get; set; }
-        public string Url { get; set; }
+        public string Title { get; init; }
+        public string Company { get; init; }
+        public string Site { get; init; }
+        public string Url { get; init; }
         public DateTime? Scrapedate { get; set; }
-        public string Description { get; set; }
+        public string Description { get; init; }
     }
 }

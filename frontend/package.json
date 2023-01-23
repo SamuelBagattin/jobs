@@ -1,48 +1,53 @@
 {
-  "name": "jobs",
-  "version": "0.0.0",
-  "scripts": {
-    "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
-    "test": "ng test",
-    "lint": "ng lint",
-    "e2e": "ng e2e"
-  },
+  "name": "typescript-nextjs-starter",
+  "description": "A TypeScript starter for Next.js that includes all you need to build amazing projects",
+  "version": "1.0.0",
   "private": true,
+  "author": "João Pedro Schmitz <hey@joaopedro.dev> (@jpedroschmitz)",
+  "license": "MIT",
+  "keywords": [
+    "nextjs",
+    "starter",
+    "typescript"
+  ],
+  "scripts": {
+    "dev": "next",
+    "build": "next build",
+    "start": "next start",
+    "export": "next export",
+    "type-check": "tsc",
+    "lint": "eslint --ignore-path .gitignore \"src/**/*.+(ts|js|tsx)\"",
+    "format": "prettier --ignore-path .gitignore \"src/**/*.+(ts|js|tsx)\" --write",
+    "postinstall": "cd .. && husky install"
+  },
+  "lint-staged": {
+    "./src/**/*.{ts,js,jsx,tsx}": [
+      "eslint --ignore-path .gitignore --fix",
+      "prettier --ignore-path .gitignore --write"
+    ]
+  },
   "dependencies": {
-    "@angular/animations": "~13.3.10",
-    "@angular/cdk": "^13.3.8",
-    "@angular/common": "~13.3.10",
-    "@angular/compiler": "~13.3.10",
-    "@angular/core": "~13.3.10",
-    "@angular/forms": "~13.3.10",
-    "@angular/material": "^13.3.8",
-    "@angular/platform-browser": "~13.3.10",
-    "@angular/platform-browser-dynamic": "~13.3.10",
-    "@angular/router": "~13.3.10",
-    "@angular/service-worker": "~13.3.10",
-    "rxjs": "~6.6.0",
-    "tslib": "^2.3.1",
-    "zone.js": "~0.11.4"
+    "next": "^12.3.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "~13.3.7",
-    "@angular/cli": "latest",
-    "@angular/compiler-cli": "~13.3.10",
-    "@types/jasmine": "~3.6.0",
-    "@types/node": "^12.11.1",
-    "codelyzer": "^6.0.0",
-    "jasmine-core": "~3.6.0",
-    "jasmine-spec-reporter": "~5.0.0",
-    "karma": "~6.3.14",
-    "karma-chrome-launcher": "~3.1.0",
-    "karma-coverage": "~2.0.3",
-    "karma-jasmine": "~4.0.0",
-    "karma-jasmine-html-reporter": "^1.5.0",
-    "protractor": "~7.0.0",
-    "ts-node": "~8.3.0",
-    "tslint": "~6.1.0",
-    "typescript": "~4.6.4"
+    "@commitlint/cli": "^17.1.2",
+    "@commitlint/config-conventional": "^17.1.0",
+    "@types/node": "^18.8.3",
+    "@types/react": "^18.0.21",
+    "@types/react-dom": "^18.0.6",
+    "@typescript-eslint/eslint-plugin": "^5.39.0",
+    "@typescript-eslint/parser": "^5.39.0",
+    "eslint": "^8.25.0",
+    "eslint-config-next": "^12.3.1",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-import-resolver-typescript": "^3.5.1",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "husky": "^8.0.1",
+    "lint-staged": "^13.0.3",
+    "prettier": "^2.7.1",
+    "typescript": "^4.8.4"
   }
 }

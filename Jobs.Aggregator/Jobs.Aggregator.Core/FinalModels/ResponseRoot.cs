@@ -2,7 +2,7 @@ using System;
 
 namespace Jobs.Aggregator.Core.FinalModels
 {
-    public class ResponseRoot
+    public record ResponseRoot
     {
         public DateTime LastUpdatedAt => DateTime.Now;
         public CompanyResponse Companies { get; set; }

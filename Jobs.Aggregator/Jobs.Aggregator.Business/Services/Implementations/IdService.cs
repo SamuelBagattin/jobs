@@ -1,7 +1,4 @@
-﻿using System;
-using System.Text;
-using Jobs.Aggregator.Core.Services.Contracts;
-using Jobs.Aggregator.Utils;
+﻿using Jobs.Aggregator.Core.Services.Contracts;
 
 namespace Jobs.Aggregator.Core.Services.Implementations
 {

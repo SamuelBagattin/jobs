@@ -4,9 +4,9 @@ using System.Text.Json.Serialization;
 
 namespace Jobs.Aggregator.Core.FinalModels
 {
-    public class TechnologyStatisticsJob
+    public record TechnologyStatisticsJob
     {
-        public IEnumerable<string> Ids { get; set; }
+        public IEnumerable<string> Ids { get; init; }
 
         public int Count => Ids.Count();
     }

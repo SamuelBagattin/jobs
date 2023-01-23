@@ -2,10 +2,10 @@ using System.Text.RegularExpressions;
 
 namespace Jobs.Aggregator.Core.Models
 {
-    public class TechnologyData
+    public record TechnologyData
     {
-        public Regex Regex { get; set; }
+        public Regex Regex { get; init; }
 
-        public string DisplayName { get; set; }
+        public string DisplayName { get; init; }
     }
 }

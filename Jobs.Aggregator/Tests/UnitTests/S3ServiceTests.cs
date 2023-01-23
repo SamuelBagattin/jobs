@@ -1,7 +1,4 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.S3;
@@ -35,7 +32,7 @@ namespace UnitTests
             var actual = new PutObjectRequest();
             _amazonS3Mock.Setup(
                     e => e.PutObjectAsync(It.IsAny<PutObjectRequest>(), new CancellationToken()))
-                .Callback<PutObjectRequest, CancellationToken>((e, token) => { actual = e; });
+                .Callback<PutObjectRequest, CancellationToken>((e, _) => { actual = e; });
 
             // Act
             await _sut.PutJsonObjectAsync(bucketNameData, key, body, default);

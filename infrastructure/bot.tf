@@ -19,7 +19,7 @@ resource "aws_lambda_function" "bot" {
   handler          = "main.handler"
   role             = aws_iam_role.bot_role.arn
   runtime          = "nodejs14.x"
-  architectures    = ["x86_64"]
+  architectures    = ["arm64"]
   s3_bucket        = aws_s3_object.bot.bucket
   s3_key           = aws_s3_object.bot.key
   source_code_hash = data.archive_file.bot.output_base64sha256
@@ -39,7 +39,6 @@ resource "aws_lambda_function" "bot" {
   }
 
   tags = {
-    Project : local.project_name
     Name : local.discord_bot_lambda_name
   }
 

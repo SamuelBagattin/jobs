@@ -1,20 +1,66 @@
 module "aggregated_results_s3_bucket" {
   source            = "./modules/s3_bucket"
   bucket_name       = local.aggregator_results_bucket_name
-  bucket_policy     = data.aws_iam_policy_document.s3_aggregated_results_policy.json
+  bucket_policy     = data.aws_iam_policy_document.s3_aggregator_results_policy.json
   set_bucket_policy = true
 }
 
-data "aws_iam_policy_document" "s3_aggregated_results_policy" {
+data "aws_iam_policy_document" "s3_aggregator_results_policy" {
   statement {
     actions   = ["s3:GetObject"]
-    resources = ["${module.aggregated_results_s3_bucket.bucket_arn}/**"]
+    resources = ["${module.aggregated_results_s3_bucket.bucket_arn}/*"]
 
     principals {
-      type        = "AWS"
-      identifiers = [aws_cloudfront_origin_access_identity.origin_access_identity.iam_arn]
+      type        = "Service"
+      identifiers = ["cloudfront.amazonaws.com"]
+    }
+    condition {
+      test     = "StringEquals"
+      values   = [aws_cloudfront_distribution.s3_distribution.arn]
+      variable = "AWS:SourceArn"
     }
   }
+}
+
+module "website_s3_bucket" {
+  source            = "./modules/s3_bucket"
+  bucket_name       = local.website_bucket_name
+  bucket_policy     = data.aws_iam_policy_document.s3_website_policy.json
+  set_bucket_policy = true
+}
+
+
+data "aws_iam_policy_document" "s3_website_policy" {
+  statement {
+    actions   = ["s3:GetObject"]
+    resources = ["${module.website_s3_bucket.bucket_arn}/*"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["cloudfront.amazonaws.com"]
+    }
+    condition {
+      test     = "StringEquals"
+      values   = [aws_cloudfront_distribution.s3_distribution.arn]
+      variable = "AWS:SourceArn"
+    }
+  }
+}
+
+resource "aws_cloudfront_origin_access_control" "aggregator_results" {
+  name                              = "Aggregator Results"
+  description                       = "Aggregator Results"
+  origin_access_control_origin_type = "s3"
+  signing_behavior                  = "always"
+  signing_protocol                  = "sigv4"
+}
+
+resource "aws_cloudfront_origin_access_control" "website" {
+  name                              = "Website"
+  description                       = "Website"
+  origin_access_control_origin_type = "s3"
+  signing_behavior                  = "always"
+  signing_protocol                  = "sigv4"
 }
 
 resource "aws_cloudfront_origin_access_identity" "origin_access_identity" {

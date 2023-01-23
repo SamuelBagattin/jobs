@@ -3,24 +3,38 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <!-- This property makes the build directory similar to a publish directory and helps the AWS .NET Lambda Mock Test Tool find project dependencies. -->
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+        <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+        <!-- PublishAot tells the compiler to publish native AOT binaries. -->
+        <PublishAot>false</PublishAot>
+        <AssemblyName>bootstrap</AssemblyName>
+        <!-- StripSymbols tells the compiler to strip debugging symbols from the final executable if we're on Linux and put them into their own file. 
+    This will greatly reduce the final executable's size.-->
+        <StripSymbols>true</StripSymbols>
     </PropertyGroup>
-    
+
+
     <ItemGroup>
         <Content Include="appsettings.json">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
             <CopyToPublishDirectory>Always</CopyToPublishDirectory>
         </Content>
     </ItemGroup>
-    
+
     <ItemGroup>
-      <ProjectReference Include="..\Jobs.Aggregator.Business\Jobs.Aggregator.Business.csproj" />
+        <ProjectReference Include="..\Jobs.Aggregator.Business\Jobs.Aggregator.Business.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Amazon.Lambda.Core" Version="2.1.0" />
-      <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.7.2" />
-      <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
-      <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
+        <PackageReference Include="Amazon.Lambda.Core" Version="2.1.0" />
+        <PackageReference Include="Amazon.Lambda.RuntimeSupport" Version="1.8.2" />
+        <PackageReference Include="Amazon.Lambda.Serialization.SystemTextJson" Version="2.3.0" />
+        <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.7.2" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
     </ItemGroup>
 
 </Project>

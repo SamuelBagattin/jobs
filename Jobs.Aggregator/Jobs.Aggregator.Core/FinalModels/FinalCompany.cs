@@ -2,13 +2,15 @@ using System.Collections.Generic;
 
 namespace Jobs.Aggregator.Core.FinalModels
 {
-    public class FinalCompany
+    public record FinalCompany
     {
-        public string Id { get; set; }
-        public IEnumerable<string> MainTechnologies { get; set; }
+        public string Id { get; init; }
+        public IEnumerable<string> MainTechnologies { get; init; }
 
-        public IEnumerable<string> SecondaryTechnologies { get; set; }
-        public string CompanyName { get; set; }
-        public IEnumerable<FinalJob> Jobs { get; set; }
+        public IEnumerable<string> SecondaryTechnologies { get; init; }
+        public string CompanyName { get; init; }
+        public IEnumerable<FinalJob> Jobs { get; init; }
+        
+        public int JobCount { get; init; }
     }
 }

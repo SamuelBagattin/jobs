@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Jobs.Aggregator.Aws.Models;
 
 namespace Jobs.Aggregator.Aws.Services.Contracts
 {

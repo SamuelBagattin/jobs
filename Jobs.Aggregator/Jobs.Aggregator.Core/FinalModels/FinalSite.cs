@@ -1,8 +1,8 @@
 namespace Jobs.Aggregator.Core.FinalModels
 {
-    public class FinalSite
+    public record FinalSite
     {
-        public string SiteName { get; set; }
+        public string SiteName { get; init; }
         public string JobUrl { get; set; }
     }
 }
